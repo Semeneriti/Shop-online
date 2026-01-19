@@ -1,58 +1,56 @@
 <?php
 
+function validation()
+{
+    $errors = [];
 
-
-$errors = [];
-
-// Проверка имени
-
-if (isset($_GET['name'])) {
-    $name = ($_GET["name"]);
-    if (empty($name)) {
-        $errors['name'] = 'Введите имя';
-    } elseif (strlen($name) < 2) {
-        $errors['name'] = 'Имя должно быть не меньше 2 символов';
+    // Проверка имени
+    if (isset($_GET['name'])) {
+        $name = ($_GET["name"]);
+        if (empty($name)) {
+            $errors['name'] = 'Введите имя';
+        } elseif (strlen($name) < 2) {
+            $errors['name'] = 'Имя должно быть не меньше 2 символов';
         }
-} else {
-    $errors['name'] = 'Заполните поле Name';
-}
+    } else {
+        $errors['name'] = 'Заполните поле Name';
+    }
 
-//Проверка email
-
-if (isset($_GET['email'])) {
-    $email = ($_GET["email"]);
-    if (empty($email)) {
+    // Проверка email
+    if (isset($_GET['email'])) {
+        $email = ($_GET["email"]);
+        if (empty($email)) {
+            $errors['email'] = 'Введите Email';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Неверный формат Email';
+        }
+    } else {
         $errors['email'] = 'Введите Email';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors['email'] = 'Неверный формат Email';
     }
-} else {
-    $errors['email'] = 'Введите Email';
-}
 
-// Проверка пароля
-if (isset($_GET['password'])) {
-    $password = $_GET["password"];
-    if (empty($password)) {
+    // Проверка пароля
+    if (isset($_GET['password'])) {
+        $password = $_GET["password"];
+        if (empty($password)) {
+            $errors['password'] = 'Пароль должен быть заполнен';
+        } elseif (strlen($password) < 6) {
+            $errors['password'] = 'Пароль должен быть минимум из 6 символов';
+        }
+    } else {
         $errors['password'] = 'Пароль должен быть заполнен';
-    } elseif (strlen($password) < 6) {
-        $errors['password'] = 'Пароль должен быть минимум из 6 символов';
     }
-} else {
-    $errors['password'] = 'Пароль должен быть заполнен';
-}
 
-// Проверка повтора пароля
-if (isset($_GET['passwordRepeat'])) {
-    $passwordRepeat = $_GET['passwordRepeat'];
-    if (empty($passwordRepeat)) {
-        $errors['password_confirm'] = 'Подтвердите пароль';
-    } elseif (isset($password) && $password !== $passwordRepeat) {
-        $errors['passwordRepeat'] = 'Пароли не совпадают';
+    // Проверка повтора пароля
+    if (isset($_GET['passwordRepeat'])) {
+        $passwordRepeat = $_GET['passwordRepeat'];
+        if (empty($passwordRepeat)) {
+            $errors['password_confirm'] = 'Подтвердите пароль';
+        } elseif (isset($password) && $password !== $passwordRepeat) {
+            $errors['passwordRepeat'] = 'Пароли не совпадают';
+        }
+    } else {
+        $errors['passwordRepeat'] = 'Подтвердите пароль';
     }
-} else {
-    $errors['passwordRepeat'] = 'Подтвердите пароль';
-
 
     return $errors;
 }
@@ -95,4 +93,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 require_once './registration_form.php';
 ?>
-
