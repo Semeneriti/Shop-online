@@ -2,21 +2,34 @@
     <h2>Register Form</h2>
     <div class="input-container">
         <i class="fa fa-user icon"></i>
+        <?php if(isset($_GET['name'])): ?>
+            <?php echo $errors['name']; ?>
+        <?php endif;?>
+
         <input class="input-field" type="text" placeholder="Username" name="usrnm">
     </div>
 
     <div class="input-container">
         <i class="fa fa-envelope icon"></i>
+        <?php if(isset($_GET['email'])):?>
+            <?php echo $errors['email']; ?>
+        <?php endif;?>
         <input class="input-field" type="text" placeholder="Email" name="email">
     </div>
 
     <div class="input-container">
         <i class="fa fa-key icon"></i>
+        <?php if(isset($_GET['password'])): ?>
+            <?php echo $errors['password']; ?>
+        <?php endif;?>
         <input class="input-field" type="password" placeholder="Password" name="psw">
     </div>
 
     <div class="input-container">
         <i class="fa fa-key icon"></i>
+        <?php if(isset($_GET['passwordRepeat'])): ?>
+            <?php echo $errors['passwordRepeat']; ?>
+        <?php endif;?>
         <input class="input-field" type="password-repeat" placeholder="Password-repeat" name="psw-repeat">
     </div>
 
