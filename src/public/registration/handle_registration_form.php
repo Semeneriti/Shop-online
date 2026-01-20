@@ -91,5 +91,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-require_once './registration_form.php';
+require_once 'registration_form.php';
 ?>

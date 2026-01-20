@@ -1,5 +1,5 @@
 <form action="/add-product" method = "POST">
-    <h2>Register Form</h2>
+    <h2>Добавить продукт</h2>
     <div class="input-container">
         <i class="fa fa-user icon"></i>
         <?php if(isset($_GET['product-id'])): ?>

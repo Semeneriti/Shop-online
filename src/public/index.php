@@ -25,6 +25,10 @@ if ($requestUri == '/registration') {
     } else if ($requestMethod == 'POST') {
         require_once './addProduct/handle_add_product.php';
     }
+} elseif ($requestUri == '/cart') {
+    if ($requestMethod == 'GET') {
+        require_once './cart/cart.php';
+    }
 } elseif ($requestUri == '/profile') {
     if ($requestMethod == 'GET') {
         require_once './profile/profile.php';

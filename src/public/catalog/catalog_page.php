@@ -18,6 +18,9 @@
                 </div>
             </a>
         </div>
+        <br>
+        <a href="/cart">View Cart</a>
+        <a href="/profile">My Profile</a>
     <?php endforeach; ?>
 
 
