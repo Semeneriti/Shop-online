@@ -2,19 +2,27 @@
 
 session_start();
 
-if (!isset($_SESSION['userId'])) {
+if (empty($_SESSION['userId'])) {
     header("Location: /login");
     exit;
 }
 
 $userId = $_SESSION['userId'];
 
+// Подключаемся к базе
 $pdo = new PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
+
+// Получаем пользователя
 $stmt = $pdo->prepare('SELECT * FROM users WHERE id = :id');
 $stmt->execute(['id' => $userId]);
 $user = $stmt->fetch();
-?>
 
+
+if (!$user) {
+    echo "User not found!";
+    exit;
+}
+?>
 <form action="/update-profile" method="POST">
     <h2>Edit Profile</h2>
 
