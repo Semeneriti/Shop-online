@@ -1,14 +1,26 @@
 <?php
-$pdo = new PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
 
-$pdo->exec("INSERT INTO users (name, email, password) VALUES ('Ivan', 'ivan@gmail.com', 'password')");
+$requestUri = $_SERVER['REQUEST_URI'];
+$requestMethod = $_SERVER['REQUEST_METHOD'];
 
-$statement = $pdo->query("SELECT * FROM users");
-
-$data = $statement->fetchAll();
-echo "<pre>";
-print_r($data);
-
-
-
-
+if ($requestUri == '/registration') {
+    if($requestMethod == 'GET') {
+        require_once './registration_form.php';
+    }else if($requestMethod == 'POST') {
+        require_once './handle_registration_form.php';
+    }
+} elseif ($requestUri == '/login') {
+    if($requestMethod == 'GET') {
+        require_once './login_form.php';
+    } else if($requestMethod == 'POST') {
+        require_once './handle_login_form.php';
+    }
+} elseif ($requestUri == '/catalog') {
+    if($requestMethod == 'GET') {
+        require_once './catalog.php';
+    }
+    else{
+        http_response_code(404);
+        require_once './404.php';
+    }
+}

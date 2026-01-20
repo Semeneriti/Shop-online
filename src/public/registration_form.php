@@ -1,4 +1,4 @@
-<form action="handle_registration_form.php">
+<form action="/registration" method = "POST">
     <h2>Register Form</h2>
     <div class="input-container">
         <i class="fa fa-user icon"></i>

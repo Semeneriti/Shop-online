@@ -51,6 +51,7 @@ else{
     $passwordDB = $user['password'];
 
     if(password_verify($password, $passwordDB)) {
+        session_start();
         $_SESSION['userId'] = $user['id'];
         header("Location: /.catalog.php");
     }else{

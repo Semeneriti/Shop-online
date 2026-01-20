@@ -1,12 +1,12 @@
 <?php
 
-function validation()
+function validate(array $data):array
 {
     $errors = [];
 
     // Проверка имени
-    if (isset($_GET['name'])) {
-        $name = ($_GET["name"]);
+    if (isset($data['name'])) {
+        $name = ($data["name"]);
         if (empty($name)) {
             $errors['name'] = 'Введите имя';
         } elseif (strlen($name) < 2) {
@@ -17,8 +17,8 @@ function validation()
     }
 
     // Проверка email
-    if (isset($_GET['email'])) {
-        $email = ($_GET["email"]);
+    if (isset($data['email'])) {
+        $email = ($data["email"]);
         if (empty($email)) {
             $errors['email'] = 'Введите Email';
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -29,8 +29,8 @@ function validation()
     }
 
     // Проверка пароля
-    if (isset($_GET['password'])) {
-        $password = $_GET["password"];
+    if (isset($data['password'])) {
+        $password = $data["password"];
         if (empty($password)) {
             $errors['password'] = 'Пароль должен быть заполнен';
         } elseif (strlen($password) < 6) {
@@ -41,8 +41,8 @@ function validation()
     }
 
     // Проверка повтора пароля
-    if (isset($_GET['passwordRepeat'])) {
-        $passwordRepeat = $_GET['passwordRepeat'];
+    if (isset($data['passwordRepeat'])) {
+        $passwordRepeat = $data['passwordRepeat'];
         if (empty($passwordRepeat)) {
             $errors['password_confirm'] = 'Подтвердите пароль';
         } elseif (isset($password) && $password !== $passwordRepeat) {
@@ -57,7 +57,7 @@ function validation()
 
 // Проверяем отправку формы
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $errors = validateUser($_POST);
+    $errors = validate($_POST);
 
     if (empty($errors)) {
         $name = ($_POST["name"]);
