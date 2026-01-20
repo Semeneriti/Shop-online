@@ -1,4 +1,4 @@
-
+<form action="/login" method = "POST">
 <div class="login-wrapper">
     <div class="login-container">
         <div class="login-header">

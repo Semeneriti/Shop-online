@@ -1,4 +1,4 @@
-<form action="/registration" method = "POST">
+<form action="/add-product" method = "POST">
     <h2>Register Form</h2>
     <div class="input-container">
         <i class="fa fa-user icon"></i>
