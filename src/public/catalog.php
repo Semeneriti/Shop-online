@@ -1,5 +1,10 @@
 <?php
 
+
+$userID = $_SESSION['userID'];
+
+
+
 $pdo = new PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
 
 $stmt = $pdo->query('SELECT * FROM products');
