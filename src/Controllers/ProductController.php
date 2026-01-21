@@ -1,8 +1,10 @@
 <?php
 
+require_once __DIR__ . '/../Models/Cart.php';
+
 session_start();
 
-class Product
+class ProductController
 {
     public function addToCart()
     {
@@ -21,16 +23,10 @@ class Product
         }
 
         $pdo = new PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
-
-        $sql = "INSERT INTO user_products (user_id, product_id, amount) VALUES (:user_id, :product_id, :amount)";
-        $stmt = $pdo->prepare($sql);
+        $cartModel = new Cart($pdo);
 
         try {
-            $stmt->execute([
-                ':user_id' => $userId,
-                ':product_id' => $productId,
-                ':amount' => $amount
-            ]);
+            $cartModel->addToCart($userId, $productId, $amount);
 
             echo "Товар успешно добавлен!";
             echo "<br><a href='/catalog'>Вернуться в каталог</a>";

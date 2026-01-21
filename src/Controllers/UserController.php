@@ -1,15 +1,28 @@
 <?php
 
-class User
+require_once __DIR__ . '/../Models/User.php';
+require_once __DIR__ . '/../Models/Cart.php';
+
+class UserController
 {
-    public function getRegistrate()
+    private $userModel;
+    private $cartModel;
+
+    public function __construct()
     {
         session_start();
-        if(isset($_SESSION['userID'])){
-            header('Location: ./catalog');
+        $pdo = new PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
+        $this->userModel = new User($pdo);
+        $this->cartModel = new Cart($pdo);
+    }
+
+    public function getRegistrate()
+    {
+        if (isset($_SESSION['userId'])) {
+            header('Location: /catalog');
         }
 
-        require_once 'registration/Registrate.php';
+        require_once __DIR__ . '/../Views/registration.php';
     }
 
     public function registrate()
@@ -22,34 +35,18 @@ class User
                 $email = ($_POST["email"]);
                 $password = $_POST["password"];
 
-                try {
-                    $pdo = new PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
-                    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                $existingUser = $this->userModel->findByEmail($email);
 
-                    // Проверяем, не существует ли уже пользователь с таким email
-                    $stmt = $pdo->prepare("SELECT id FROM users WHERE email = :email");
-                    $stmt->execute([':email' => $email]);
-
-                    if ($stmt->fetch()) {
-                        $errors['email'] = 'Пользователь с таким email уже существует';
-                    } else {
-                        // Вставляем нового пользователя
-                        $stmt = $pdo->prepare("INSERT INTO users (name, email, password) VALUES (:name, :email, :password)");
-                        $stmt->execute([
-                            ':name' => $name,
-                            ':email' => $email,
-                            ':password' => password_hash($password, PASSWORD_DEFAULT)
-                        ]);
-
-                        exit;
-                    }
-                } catch (PDOException $e) {
-                    $errors['database'] = 'Ошибка базы данных: ' . $e->getMessage();
+                if ($existingUser) {
+                    $errors['email'] = 'Пользователь с таким email уже существует';
+                } else {
+                    $this->userModel->create($name, $email, $password);
+                    exit;
                 }
             }
         }
 
-        require_once 'registration_form.php';
+        require_once __DIR__ . '/../Views/registration.php';
     }
 
     public function login()
@@ -69,11 +66,7 @@ class User
             }
 
             if (empty($errors)) {
-                $pdo = new PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
-                $stmt = $pdo->prepare('SELECT * FROM users WHERE email = :email');
-                $stmt->execute(['email' => $email]);
-
-                $user = $stmt->fetch();
+                $user = $this->userModel->findByEmail($email);
 
                 if ($user === false) {
                     $errors[] = "Пользователь не найден";
@@ -81,7 +74,6 @@ class User
                     $passwordDB = $user['password'];
 
                     if (password_verify($password, $passwordDB)) {
-                        session_start();
                         $_SESSION['userId'] = $user['id'];
                         header("Location: /catalog");
                         exit;
@@ -92,44 +84,25 @@ class User
             }
         }
 
-        require_once 'login_form.php';
+        require_once __DIR__ . '/../Views/login.php';
     }
 
     public function getProfile()
     {
-        session_start();
-
         if (!isset($_SESSION['userId'])) {
             header("Location: /login");
             exit;
         }
 
         $userId = $_SESSION['userId'];
+        $user = $this->userModel->findById($userId);
+        $userProducts = $this->cartModel->getUserProducts($userId);
 
-        $pdo = new PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
-
-        // Получаем данные пользователя
-        $stmt = $pdo->prepare('SELECT * FROM users WHERE id = :id');
-        $stmt->execute(['id' => $userId]);
-        $user = $stmt->fetch();
-
-        // Получаем товары пользователя
-        $stmt = $pdo->prepare('
-            SELECT p.*, up.amount 
-            FROM user_products up 
-            JOIN products p ON up.product_id = p.id 
-            WHERE up.user_id = :user_id
-        ');
-        $stmt->execute(['user_id' => $userId]);
-        $userProducts = $stmt->fetchAll();
-
-        require_once __DIR__ . '/../profile/profile_page.php';
+        require_once __DIR__ . '/../Views/profile.php';
     }
 
     public function updateProfile()
     {
-        session_start();
-
         if (!isset($_SESSION['userId'])) {
             header("Location: /login");
             exit;
@@ -140,28 +113,7 @@ class User
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
 
-        $pdo = new PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
-
-        if (!empty($password)) {
-            // Обновляем с паролем
-            $sql = "UPDATE users SET name = :name, email = :email, password = :password WHERE id = :id";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                ':name' => $name,
-                ':email' => $email,
-                ':password' => password_hash($password, PASSWORD_DEFAULT),
-                ':id' => $userId
-            ]);
-        } else {
-            // Обновляем без пароля
-            $sql = "UPDATE users SET name = :name, email = :email WHERE id = :id";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                ':name' => $name,
-                ':email' => $email,
-                ':id' => $userId
-            ]);
-        }
+        $this->userModel->update($userId, $name, $email, $password);
 
         echo "Profile updated successfully!";
         echo "<br><a href='/profile'>Back to Profile</a>";
@@ -171,7 +123,6 @@ class User
     {
         $errors = [];
 
-        // Проверка имени
         if (isset($data['name'])) {
             $name = ($data["name"]);
             if (empty($name)) {
@@ -183,7 +134,6 @@ class User
             $errors['name'] = 'Заполните поле Name';
         }
 
-        // Проверка email
         if (isset($data['email'])) {
             $email = ($data["email"]);
             if (empty($email)) {
@@ -195,7 +145,6 @@ class User
             $errors['email'] = 'Введите Email';
         }
 
-        // Проверка пароля
         if (isset($data['password'])) {
             $password = $data["password"];
             if (empty($password)) {
@@ -207,7 +156,6 @@ class User
             $errors['password'] = 'Пароль должен быть заполнен';
         }
 
-        // Проверка повтора пароля
         if (isset($data['passwordRepeat'])) {
             $passwordRepeat = $data['passwordRepeat'];
             if (empty($passwordRepeat)) {
