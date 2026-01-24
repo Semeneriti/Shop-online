@@ -11,9 +11,8 @@ class UserController
     public function __construct()
     {
         session_start();
-        $pdo = new PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
-        $this->userModel = new User($pdo);
-        $this->cartModel = new Cart($pdo);
+        $this->userModel = new User();
+        $this->cartModel = new Cart();
     }
 
     public function getRegistrate()
@@ -87,6 +86,24 @@ class UserController
         require_once __DIR__ . '/../Views/login.php';
     }
 
+    public function logout()
+    {
+        $_SESSION = array();
+
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
+
+        session_destroy();
+
+        header("Location: /login");
+        exit;
+    }
+
     public function getProfile()
     {
         if (!isset($_SESSION['userId'])) {
@@ -99,6 +116,11 @@ class UserController
         $userProducts = $this->cartModel->getUserProducts($userId);
 
         require_once __DIR__ . '/../Views/profile.php';
+    }
+
+    public function showEditForm()
+    {
+        require_once __DIR__ . '/../Views/edit_profile.php';
     }
 
     public function updateProfile()

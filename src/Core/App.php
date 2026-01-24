@@ -23,6 +23,12 @@ class App
                 'method' => 'login',
             ]
         ],
+        '/logout' => [
+            'GET' => [
+                'class' => 'UserController',
+                'method' => 'logout',
+            ]
+        ],
         '/catalog' => [
             'GET' => [
                 'class' => 'CatalogController',
@@ -42,7 +48,7 @@ class App
         '/cart' => [
             'GET' => [
                 'class' => 'CartController',
-                'method' => '__construct',  // исправлено с 'show' на '__construct'
+                'method' => '__construct',
             ]
         ],
         '/profile' => [
@@ -87,13 +93,11 @@ class App
         $class = $handler['class'];
         $method = $handler['method'];
 
-
         $controllerPath = __DIR__ . '/../Controllers/' . $class . '.php';
 
         require_once $controllerPath;
 
         $controller = new $class();
-
 
         if ($method !== '__construct') {
             $controller->$method();

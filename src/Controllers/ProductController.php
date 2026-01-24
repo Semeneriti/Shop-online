@@ -6,6 +6,11 @@ session_start();
 
 class ProductController
 {
+    public function showForm()
+    {
+        require_once __DIR__ . '/../Views/add_product.php';
+    }
+
     public function addToCart()
     {
         if (!isset($_SESSION['userId'])) {
@@ -22,8 +27,7 @@ class ProductController
             exit;
         }
 
-        $pdo = new PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
-        $cartModel = new Cart($pdo);
+        $cartModel = new Cart();
 
         try {
             $cartModel->addToCart($userId, $productId, $amount);

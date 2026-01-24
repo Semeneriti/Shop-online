@@ -1,14 +1,9 @@
 <?php
 
-class Product
+require_once __DIR__ . '/Model.php';
+
+class Product extends Model
 {
-    private $pdo;
-
-    public function __construct($pdo)
-    {
-        $this->pdo = $pdo;
-    }
-
     public function getAll()
     {
         $stmt = $this->pdo->query('SELECT * FROM products');

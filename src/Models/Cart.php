@@ -1,14 +1,9 @@
 <?php
 
-class Cart
+require_once __DIR__ . '/Model.php';
+
+class Cart extends Model
 {
-    private $pdo;
-
-    public function __construct($pdo)
-    {
-        $this->pdo = $pdo;
-    }
-
     public function getUserCart($userId)
     {
         $stmt = $this->pdo->prepare('

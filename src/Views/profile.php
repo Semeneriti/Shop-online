@@ -35,6 +35,7 @@
     <br>
     <a href="/catalog">Back to Catalog</a>
 </div>
+<a href="/logout">Logout</a>
 
 <style>
     .profile-container {

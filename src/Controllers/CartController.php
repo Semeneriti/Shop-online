@@ -14,8 +14,7 @@ class CartController
 
         $userId = $_SESSION['userId'];
 
-        $pdo = new PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
-        $cartModel = new Cart($pdo);
+        $cartModel = new Cart();
 
         $cartItems = $cartModel->getUserCart($userId);
 

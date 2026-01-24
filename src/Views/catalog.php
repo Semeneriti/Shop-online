@@ -69,7 +69,6 @@
                             <input type="number" name="amount" value="1" min="1" style="width: 60px; padding: 5px; margin-right: 10px;">
                             <button type="submit" class="btn" style="padding: 5px 15px; font-size: 14px;">
                                 <?php
-                                // Проверяем, есть ли товар уже в корзине
                                 $inCart = false;
                                 $cartAmount = 0;
                                 if (isset($userID)) {
@@ -98,7 +97,7 @@
     <br>
     <a href="/cart">View Cart</a>
     <a href="/profile">My Profile</a>
-
+    <a href="/logout">Logout</a>
 
     <style>
         body {
@@ -144,7 +143,6 @@
             background-color: white;
         }
 
-        /* Стили для формы добавления товара */
         .input-container {
             display: flex;
             width: 100%;
@@ -183,3 +181,4 @@
             opacity: 1;
         }
     </style>
+</div>
