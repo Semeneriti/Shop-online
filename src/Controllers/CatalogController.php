@@ -1,5 +1,5 @@
 <?php
-
+namespace Controllers;
 
 class CatalogController
 {
@@ -8,7 +8,7 @@ class CatalogController
         session_start();
         $userID = $_SESSION['userId'] ?? null;
 
-        $productModel = new Product();
+        $productModel = new \Models\Product();
         $products = $productModel->getAll();
 
         $cartItems = [];
@@ -16,7 +16,7 @@ class CatalogController
         $cartItemsCount = 0;
 
         if ($userID) {
-            $cartModel = new Cart();
+            $cartModel = new \Models\Cart();
             $cartItems = $cartModel->getUserCart($userID);
 
             foreach ($cartItems as $item) {

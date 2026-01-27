@@ -1,4 +1,5 @@
 <?php
+namespace Core;
 
 class App
 {
@@ -66,6 +67,16 @@ class App
                 'class' => 'UserController',
                 'method' => 'updateProfile',
             ]
+        ],
+        '/checkout' => [
+            'GET' => [
+                'class' => 'CartController',
+                'method' => 'showCheckout',
+            ],
+            'POST' => [
+                'class' => 'CartController',
+                'method' => 'processCheckout',
+            ]
         ]
     ];
 
@@ -90,7 +101,7 @@ class App
 
         $handler = $routeMethods[$requestMethod];
 
-        $class = $handler['class'];
+        $class = '\\Controllers\\' . $handler['class'];
         $method = $handler['method'];
 
         $controller = new $class();

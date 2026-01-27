@@ -1,6 +1,5 @@
 <?php
-
-
+namespace Controllers;
 
 class UserController
 {
@@ -10,8 +9,8 @@ class UserController
     public function __construct()
     {
         session_start();
-        $this->userModel = new User();
-        $this->cartModel = new Cart();
+        $this->userModel = new \Models\User();
+        $this->cartModel = new \Models\Cart();
     }
 
     public function getRegistrate()
@@ -113,6 +112,18 @@ class UserController
         $userId = $_SESSION['userId'];
         $user = $this->userModel->findById($userId);
         $userProducts = $this->cartModel->getUserProducts($userId);
+
+        $pdo = new \PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
+
+        $stmt = $pdo->prepare('
+            SELECT o.*, 
+                   (SELECT COUNT(*) FROM order_products op WHERE op.order_id = o.id) as items_count
+            FROM orders o 
+            WHERE o.user_id = :user_id 
+            ORDER BY o.created_at DESC
+        ');
+        $stmt->execute(['user_id' => $userId]);
+        $orders = $stmt->fetchAll();
 
         require_once __DIR__ . '/../Views/profile.php';
     }

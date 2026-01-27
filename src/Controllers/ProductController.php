@@ -1,5 +1,5 @@
 <?php
-
+namespace Controllers;
 
 session_start();
 
@@ -26,14 +26,14 @@ class ProductController
             exit;
         }
 
-        $cartModel = new Cart();
+        $cartModel = new \Models\Cart();
 
         try {
             $cartModel->addToCart($userId, $productId, $amount);
 
             echo "Товар успешно добавлен!";
             echo "<br><a href='/catalog'>Вернуться в каталог</a>";
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             echo "Ошибка: " . $e->getMessage();
         }
     }

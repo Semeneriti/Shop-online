@@ -1,11 +1,12 @@
 <?php
+namespace Models;
 
 class Model
 {
-    protected PDO $pdo;
+    protected \PDO $pdo;
 
     public function __construct()
     {
-        $this->pdo = new PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
+        $this->pdo = new \PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
     }
 }

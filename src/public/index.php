@@ -1,53 +1,26 @@
 <?php
 
-$autoloadCore = function (string $className) {
-    $path = "../Core/" . $className . ".php";
-    if (file_exists($path)) {
-        require_once $path;
-        return true;
-    }
-    else {
-        return false;
-    }
-};
+spl_autoload_register(function (string $className) {
+    $prefixes = [
+        'Controllers\\' => '../Controllers/',
+        'Core\\' => '../Core/',
+        'Models\\' => '../Models/',
+    ];
 
-$autoloadController = function (string $className) {
-    $path = "../Controller/" . $className . ".php";
-    if (file_exists($path)) {
-        require_once $path;
-        return true;
-    }
-    else {
-        return false;
-    }
-};
+    foreach ($prefixes as $prefix => $baseDir) {
+        if (strpos($className, $prefix) === 0) {
+            $relativeClass = substr($className, strlen($prefix));
+            $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
 
-$autoloadModels = function (string $className) {
-    $path = "../Models/" . $className . ".php";
-    if (file_exists($path)) {
-        require_once $path;
-        return true;
+            if (file_exists($file)) {
+                require_once $file;
+                return true;
+            }
+        }
     }
-    else {
-        return false;
-    }
-};
 
-$autoloadControllers = function (string $className) {
-    $path = "../Controllers/" . $className . ".php";
-    if (file_exists($path)) {
-        require_once $path;
-        return true;
-    }
-    else {
-        return false;
-    }
-};
+    return false;
+});
 
-spl_autoload_register($autoloadCore, true);
-spl_autoload_register($autoloadController, true);
-spl_autoload_register($autoloadModels, true);
-spl_autoload_register($autoloadControllers, true);
-
-$app = new App();
+$app = new \Core\App();
 $app->run();

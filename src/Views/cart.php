@@ -38,7 +38,12 @@
     <br>
     <a href="/catalog">Continue Shopping</a>
 </div>
-
+<?php if (!empty($cartItems)): ?>
+    <br><br>
+    <a href="/checkout" style="font-size: 18px; padding: 10px 20px; background: green; color: white; text-decoration: none;">
+        Перейти к оформлению заказа
+    </a>
+<?php endif; ?>
 <style>
     .cart-container {
         padding: 20px;
