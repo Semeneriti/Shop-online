@@ -93,10 +93,6 @@ class App
         $class = $handler['class'];
         $method = $handler['method'];
 
-        $controllerPath = __DIR__ . '/../Controllers/' . $class . '.php';
-
-        require_once $controllerPath;
-
         $controller = new $class();
 
         if ($method !== '__construct') {
