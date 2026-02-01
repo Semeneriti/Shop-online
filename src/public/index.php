@@ -1,53 +1,26 @@
 <?php
 
-spl_autoload_register(function (string $className) {
-    $prefixes = [
-        'Controllers\\' => '../Controllers/',
-        'Core\\' => '../Core/',
-        'Models\\' => '../Models/',
-    ];
+require_once '../src/Core/Autoloader.php';
 
-    foreach ($prefixes as $prefix => $baseDir) {
-        if (strpos($className, $prefix) === 0) {
-            $relativeClass = substr($className, strlen($prefix));
-            $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
+\Core\Autoloader::register();
 
-            if (file_exists($file)) {
-                require_once $file;
-                return true;
-            }
-        }
-    }
+$app = new \Core\App();
 
-    return false;
-});
-
-use Core\App;
-use Controllers\UserController;
-use Controllers\CatalogController;
-use Controllers\ProductController;
-use Controllers\CartController;
-use Controllers\OrderController;
-
-// Создаем экземпляр приложения
-$app = new App();
-
-// Регистрируем маршруты
-$app->addRoute('/registration', 'GET', UserController::class, 'getRegistrate');
-$app->addRoute('/registration', 'POST', UserController::class, 'registrate');
-$app->addRoute('/login', 'GET', UserController::class, 'login');
-$app->addRoute('/login', 'POST', UserController::class, 'login');
-$app->addRoute('/logout', 'GET', UserController::class, 'logout');
-$app->addRoute('/catalog', 'GET', CatalogController::class, '__construct');
-$app->addRoute('/add-product', 'GET', ProductController::class, 'showForm');
-$app->addRoute('/add-product', 'POST', ProductController::class, 'addToCart');
-$app->addRoute('/cart', 'GET', CartController::class, '__construct');
-$app->addRoute('/profile', 'GET', UserController::class, 'getProfile');
-$app->addRoute('/edit-profile', 'GET', UserController::class, 'showEditForm');
-$app->addRoute('/edit-profile', 'POST', UserController::class, 'updateProfile');
-$app->addRoute('/checkout', 'GET', CartController::class, 'showCheckout');
-$app->addRoute('/checkout', 'POST', CartController::class, 'processCheckout');
-$app->addRoute('/user-orders', 'GET', OrderController::class, 'getAllOrders');
-
+$app->get('/registration', \Controllers\UserController::class, 'getRegistrate');
+$app->post('/registration', \Controllers\UserController::class, 'registrate');
+$app->get('/login', \Controllers\UserController::class, 'login');
+$app->post('/login', \Controllers\UserController::class, 'login');
+$app->get('/logout', \Controllers\UserController::class, 'logout');
+$app->get('/catalog', \Controllers\CatalogController::class, 'showCatalog');
+$app->get('/add-product', \Controllers\ProductController::class, 'showForm');
+$app->post('/add-product', \Controllers\ProductController::class, 'addToCart');
+$app->get('/cart', \Controllers\CartController::class, 'showCart');
+$app->post('/cart/increase', \Controllers\CartController::class, 'increaseProduct');
+$app->post('/cart/decrease', \Controllers\CartController::class, 'decreaseProduct');
+$app->get('/profile', \Controllers\UserController::class, 'getProfile');
+$app->get('/edit-profile', \Controllers\UserController::class, 'showEditForm');
+$app->post('/edit-profile', \Controllers\UserController::class, 'updateProfile');
+$app->get('/checkout', \Controllers\CartController::class, 'showCheckout');
+$app->post('/checkout', \Controllers\CartController::class, 'processCheckout');
 
 $app->run();

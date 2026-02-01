@@ -1,5 +1,4 @@
 <div class="container">
-    <!-- Блок информации о корзине -->
     <?php if (isset($userID) && $cartItemsCount > 0): ?>
         <div class="cart-info" style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #4caf50;">
             <h4 style="margin: 0; color: #2e7d32;">
@@ -31,7 +30,6 @@
 
     <h3>Catalog</h3>
 
-    <!-- Форма добавления товара -->
     <div class="add-product-form" style="margin-bottom: 30px; padding: 20px; background: #f5f5f5; border-radius: 5px;">
         <h4>Add Product to Cart</h4>
         <form action="/add-product" method="POST">
@@ -63,31 +61,51 @@
                         <div class="card-footer">
                             $<?php echo $product['price']; ?>
                         </div>
-                        <!-- Кнопка быстрого добавления товара -->
-                        <form action="/add-product" method="POST" style="margin-top: 10px; display: inline-block;">
-                            <input type="hidden" name="product-id" value="<?php echo $product['id']; ?>">
-                            <input type="number" name="amount" value="1" min="1" style="width: 60px; padding: 5px; margin-right: 10px;">
-                            <button type="submit" class="btn" style="padding: 5px 15px; font-size: 14px;">
-                                <?php
-                                $inCart = false;
-                                $cartAmount = 0;
-                                if (isset($userID)) {
-                                    foreach ($cartItems as $cartItem) {
-                                        if ($cartItem['id'] == $product['id']) {
-                                            $inCart = true;
-                                            $cartAmount = $cartItem['amount'];
-                                            break;
-                                        }
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 10px;">
+                            <?php
+                            $inCart = false;
+                            $cartAmount = 0;
+                            if (isset($userID)) {
+                                foreach ($cartItems as $cartItem) {
+                                    if ($cartItem['product']->getId() == $product['id']) {
+                                        $inCart = true;
+                                        $cartAmount = $cartItem['amount'];
+                                        break;
                                     }
                                 }
-                                ?>
-                                <?php if ($inCart): ?>
-                                    ✅ В корзине (<?php echo $cartAmount; ?>)
-                                <?php else: ?>
-                                    ➕ Добавить
-                                <?php endif; ?>
-                            </button>
-                        </form>
+                            }
+                            ?>
+                            <?php if ($inCart && $cartAmount > 0): ?>
+                                <form action="/cart/decrease" method="POST" style="display: inline;">
+                                    <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                                    <button type="submit" class="btn" style="padding: 5px 10px; font-size: 14px; background: #f44336;">
+                                        ➖
+                                    </button>
+                                </form>
+
+                                <span style="padding: 5px 10px; background: #4caf50; color: white; border-radius: 3px;">
+                                    <?php echo $cartAmount; ?>
+                                </span>
+
+                                <form action="/cart/increase" method="POST" style="display: inline;">
+                                    <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                                    <button type="submit" class="btn" style="padding: 5px 10px; font-size: 14px; background: #4caf50;">
+                                        ➕
+                                    </button>
+                                </form>
+
+                            <?php else: ?>
+                                <form action="/add-product" method="POST" style="display: inline;">
+                                    <input type="hidden" name="product-id" value="<?php echo $product['id']; ?>">
+                                    <div style="display: flex; align-items: center; gap: 5px;">
+                                        <input type="number" name="amount" value="1" min="1" style="width: 50px; padding: 5px; text-align: center;">
+                                        <button type="submit" class="btn" style="padding: 5px 15px; font-size: 14px; background: #2196f3;">
+                                            ➕ Добавить
+                                        </button>
+                                    </div>
+                                </form>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </a>
             </div>

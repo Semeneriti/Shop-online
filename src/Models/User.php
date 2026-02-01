@@ -3,51 +3,177 @@ namespace Models;
 
 class User extends Model
 {
-    public function findByEmail($email)
+    private ?int $id;
+    private string $name;
+    private string $email;
+    private string $passwordHash;
+    private ?\DateTime $createdAt;
+    private ?\DateTime $updatedAt;
+
+    public function __construct(
+        string $name,
+        string $email,
+        string $passwordHash,
+        ?int $id = null,
+        ?string $createdAt = null,
+        ?string $updatedAt = null
+    ) {
+        parent::__construct();
+
+        $this->id = $id;
+        $this->name = $name;
+        $this->email = $email;
+        $this->passwordHash = $passwordHash;
+        $this->createdAt = $createdAt ? new \DateTime($createdAt) : null;
+        $this->updatedAt = $updatedAt ? new \DateTime($updatedAt) : null;
+    }
+
+    // Геттеры
+    public function getId(): ?int
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM users WHERE email = :email');
+        return $this->id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function getCreatedAt(): ?\DateTime
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): ?\DateTime
+    {
+        return $this->updatedAt;
+    }
+
+    // Статические методы для работы с БД
+    public static function findByEmail(string $email): ?User
+    {
+        $pdo = self::getConnection();
+        $stmt = $pdo->prepare('SELECT * FROM users WHERE email = :email');
         $stmt->execute(['email' => $email]);
-        return $stmt->fetch();
-    }
+        $data = $stmt->fetch();
 
-    public function findById($id)
-    {
-        $stmt = $this->pdo->prepare('SELECT * FROM users WHERE id = :id');
-        $stmt->execute(['id' => $id]);
-        return $stmt->fetch();
-    }
-
-    public function create($name, $email, $password)
-    {
-        $stmt = $this->pdo->prepare("INSERT INTO users (name, email, password) VALUES (:name, :email, :password)");
-        $stmt->execute([
-            ':name' => $name,
-            ':email' => $email,
-            ':password' => password_hash($password, PASSWORD_DEFAULT)
-        ]);
-        return true;
-    }
-
-    public function update($id, $name, $email, $password = null)
-    {
-        if ($password) {
-            $sql = "UPDATE users SET name = :name, email = :email, password = :password WHERE id = :id";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([
-                ':name' => $name,
-                ':email' => $email,
-                ':password' => password_hash($password, PASSWORD_DEFAULT),
-                ':id' => $id
-            ]);
-        } else {
-            $sql = "UPDATE users SET name = :name, email = :email WHERE id = :id";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([
-                ':name' => $name,
-                ':email' => $email,
-                ':id' => $id
-            ]);
+        if (!$data) {
+            return null;
         }
+
+        return self::fromArray($data);
+    }
+
+    public static function findById(int $id): ?User
+    {
+        $pdo = self::getConnection();
+        $stmt = $pdo->prepare('SELECT * FROM users WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+        $data = $stmt->fetch();
+
+        if (!$data) {
+            return null;
+        }
+
+        return self::fromArray($data);
+    }
+
+    public function save(): bool
+    {
+        if ($this->id) {
+            return $this->update();
+        } else {
+            return $this->create();
+        }
+    }
+
+    private function create(): bool
+    {
+        $sql = "INSERT INTO users (name, email, password, created_at, updated_at) 
+                VALUES (:name, :email, :password, NOW(), NOW()) 
+                RETURNING id, created_at, updated_at";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':name' => $this->name,
+            ':email' => $this->email,
+            ':password' => $this->passwordHash
+        ]);
+
+        $result = $stmt->fetch();
+        $this->id = $result['id'];
+        $this->createdAt = new \DateTime($result['created_at']);
+        $this->updatedAt = new \DateTime($result['updated_at']);
+
         return true;
+    }
+
+    private function update(): bool
+    {
+        $sql = "UPDATE users 
+                SET name = :name, email = :email, password = :password, updated_at = NOW()
+                WHERE id = :id
+                RETURNING updated_at";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':name' => $this->name,
+            ':email' => $this->email,
+            ':password' => $this->passwordHash,
+            ':id' => $this->id
+        ]);
+
+        $result = $stmt->fetch();
+        $this->updatedAt = new \DateTime($result['updated_at']);
+
+        return true;
+    }
+
+    public function updateProfile(string $name, string $email, ?string $password = null): bool
+    {
+        $this->name = $name;
+        $this->email = $email;
+
+        if ($password) {
+            $this->passwordHash = password_hash($password, PASSWORD_DEFAULT);
+        }
+
+        return $this->update();
+    }
+
+    // Валидация пароля
+    public function verifyPassword(string $password): bool
+    {
+        return password_verify($password, $this->passwordHash);
+    }
+
+    // Преобразование из массива
+    public static function fromArray(array $data): User
+    {
+        return new self(
+            $data['name'],
+            $data['email'],
+            $data['password'],
+            $data['id'] ?? null,
+            $data['created_at'] ?? null,
+            $data['updated_at'] ?? null
+        );
+    }
+
+    // Преобразование в массив
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'created_at' => $this->createdAt ? $this->createdAt->format('Y-m-d H:i:s') : null,
+            'updated_at' => $this->updatedAt ? $this->updatedAt->format('Y-m-d H:i:s') : null
+        ];
     }
 }

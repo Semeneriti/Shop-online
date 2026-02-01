@@ -5,10 +5,27 @@ class App
 {
     private array $routes = [];
 
-    /**
-     * Добавляет маршрут в приложение
-     */
-    public function addRoute(string $route, string $routeMethod, string $className, string $method): void
+    public function get(string $route, string $className, string $method): void
+    {
+        $this->addRoute($route, 'GET', $className, $method);
+    }
+
+    public function post(string $route, string $className, string $method): void
+    {
+        $this->addRoute($route, 'POST', $className, $method);
+    }
+
+    public function put(string $route, string $className, string $method): void
+    {
+        $this->addRoute($route, 'PUT', $className, $method);
+    }
+
+    public function delete(string $route, string $className, string $method): void
+    {
+        $this->addRoute($route, 'DELETE', $className, $method);
+    }
+
+    private function addRoute(string $route, string $routeMethod, string $className, string $method): void
     {
         $this->routes[$route][$routeMethod] = [
             'class' => $className,
@@ -23,7 +40,7 @@ class App
 
         if (!isset($this->routes[$requestUri])) {
             http_response_code(404);
-            require_once __DIR__ . '/../public/404.php';
+            require_once __DIR__ . '/../../public/404.php';
             return;
         }
 
@@ -39,7 +56,6 @@ class App
         $class = $handler['class'];
         $method = $handler['method'];
 
-        // Проверяем, является ли класс полным пространством имен или нужно добавить пространство имен по умолчанию
         if (strpos($class, '\\') === false) {
             $class = '\\Controllers\\' . $class;
         }

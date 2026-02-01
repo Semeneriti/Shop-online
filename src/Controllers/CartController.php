@@ -1,11 +1,16 @@
 <?php
 namespace Controllers;
 
+use Models\Cart;
+use Models\Order;
+
 class CartController
 {
-    public function __construct()
+    public function showCart(): void
     {
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
         if (!isset($_SESSION['userId'])) {
             header("Location: /login");
@@ -14,21 +19,17 @@ class CartController
 
         $userId = $_SESSION['userId'];
 
-        $cartModel = new \Models\Cart();
-
-        $cartItems = $cartModel->getUserCart($userId);
-
-        $totalPrice = 0;
-        foreach ($cartItems as $item) {
-            $totalPrice += $item['price'] * $item['amount'];
-        }
+        $cart = new Cart($userId);
+        $cartData = $cart->toArray();
 
         require_once __DIR__ . '/../Views/cart.php';
     }
 
-    public function showCheckout()
+    public function showCheckout(): void
     {
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
         if (!isset($_SESSION['userId'])) {
             header("Location: /login");
@@ -37,25 +38,33 @@ class CartController
 
         $userId = $_SESSION['userId'];
 
-        $cartModel = new \Models\Cart();
-        $cartItems = $cartModel->getUserCart($userId);
+        $cart = new Cart($userId);
 
-        if (empty($cartItems)) {
+        if ($cart->isEmpty()) {
             header("Location: /cart");
             exit;
         }
 
-        $totalPrice = 0;
-        foreach ($cartItems as $item) {
-            $totalPrice += $item['price'] * $item['amount'];
-        }
+        $cartData = $cart->toArray();
+
+        $errors = $_SESSION['checkout_errors'] ?? [];
+        $formData = $_SESSION['checkout_data'] ?? [];
+
+        unset($_SESSION['checkout_errors'], $_SESSION['checkout_data']);
 
         require_once __DIR__ . '/../Views/checkout.php';
     }
 
-    public function processCheckout()
+    public function processCheckout(): void
     {
-        session_start();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: /checkout");
+            exit;
+        }
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
         if (!isset($_SESSION['userId'])) {
             header("Location: /login");
@@ -63,86 +72,154 @@ class CartController
         }
 
         $userId = $_SESSION['userId'];
-        $address = $_POST['address'] ?? '';
-        $phone = $_POST['phone'] ?? '';
-        $comment = $_POST['comment'] ?? '';
 
-        if (empty($address) || empty($phone)) {
-            echo "Заполните все обязательные поля!";
-            echo "<br><a href='/checkout'>Вернуться к оформлению</a>";
+        $address = htmlspecialchars(trim($_POST['address'] ?? ''));
+        $phone = htmlspecialchars(trim($_POST['phone'] ?? ''));
+        $comment = htmlspecialchars(trim($_POST['comment'] ?? ''));
+
+        $errors = [];
+        if (empty($address)) {
+            $errors['address'] = 'Укажите адрес доставки';
+        }
+
+        if (empty($phone)) {
+            $errors['phone'] = 'Укажите номер телефона';
+        } elseif (!preg_match('/^\+?[1-9]\d{1,14}$/', $phone)) {
+            $errors['phone'] = 'Неверный формат номера телефона';
+        }
+
+        if (!empty($errors)) {
+            $_SESSION['checkout_errors'] = $errors;
+            $_SESSION['checkout_data'] = [
+                'address' => $address,
+                'phone' => $phone,
+                'comment' => $comment
+            ];
+            header("Location: /checkout");
             exit;
         }
 
-        $cartModel = new \Models\Cart();
-        $cartItems = $cartModel->getUserCart($userId);
+        try {
+            $cart = new Cart($userId);
 
-        if (empty($cartItems)) {
-            echo "Корзина пуста!";
-            echo "<br><a href='/catalog'>Вернуться в каталог</a>";
+            if ($cart->isEmpty()) {
+                throw new \RuntimeException("Корзина пуста");
+            }
+
+            $orderData = $cart->checkout();
+
+            $orderData['address'] = $address;
+            $orderData['phone'] = $phone;
+            $orderData['comment'] = $comment;
+
+            $order = Order::createFromCart($orderData);
+
+            if (!$order) {
+                throw new \RuntimeException("Ошибка при создании заказа");
+            }
+
+            unset($_SESSION['checkout_errors'], $_SESSION['checkout_data']);
+
+            $orderDetails = $order->getDetails();
+
+            require_once __DIR__ . '/../Views/order_success.php';
+
+        } catch (\InvalidArgumentException $e) {
+            $_SESSION['error_message'] = $e->getMessage();
+            header("Location: /cart");
+            exit;
+        } catch (\RuntimeException $e) {
+            $_SESSION['error_message'] = $e->getMessage();
+            header("Location: /checkout");
+            exit;
+        } catch (\Exception $e) {
+            $_SESSION['error_message'] = "Произошла ошибка при оформлении заказа: " . $e->getMessage();
+            header("Location: /checkout");
+            exit;
+        }
+    }
+
+    public function increaseProduct(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: /cart");
             exit;
         }
 
-        $totalPrice = 0;
-        foreach ($cartItems as $item) {
-            $totalPrice += $item['price'] * $item['amount'];
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
 
-        $pdo = new \PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
-
-        $stmt = $pdo->prepare('
-            INSERT INTO orders (user_id, address, phone, comment, total_price) 
-            VALUES (:user_id, :address, :phone, :comment, :total_price)
-            RETURNING id
-        ');
-
-        $stmt->execute([
-            ':user_id' => $userId,
-            ':address' => $address,
-            ':phone' => $phone,
-            ':comment' => $comment,
-            ':total_price' => $totalPrice
-        ]);
-
-        $orderId = $stmt->fetch()['id'];
-
-        foreach ($cartItems as $item) {
-            $stmt = $pdo->prepare('
-                INSERT INTO order_products (order_id, product_id, amount, price) 
-                VALUES (:order_id, :product_id, :amount, :price)
-            ');
-
-            $stmt->execute([
-                ':order_id' => $orderId,
-                ':product_id' => $item['id'],
-                ':amount' => $item['amount'],
-                ':price' => $item['price']
-            ]);
+        if (!isset($_SESSION['userId'])) {
+            header("Location: /login");
+            exit;
         }
 
-        $stmt = $pdo->prepare('DELETE FROM user_products WHERE user_id = :user_id');
-        $stmt->execute(['user_id' => $userId]);
+        $userId = $_SESSION['userId'];
+        $productId = (int)($_POST['product_id'] ?? 0);
 
-        echo "<h1>Заказ #$orderId оформлен!</h1>";
-        echo "<p>Спасибо за покупку!</p>";
-        echo "<p><strong>Номер заказа:</strong> #$orderId</p>";
-        echo "<p><strong>Адрес доставки:</strong> " . htmlspecialchars($address) . "</p>";
-        echo "<p><strong>Телефон:</strong> " . htmlspecialchars($phone) . "</p>";
-        if (!empty($comment)) {
-            echo "<p><strong>Комментарий:</strong> " . htmlspecialchars($comment) . "</p>";
+        if ($productId <= 0) {
+            header("Location: /catalog");
+            exit;
         }
-        echo "<p><strong>Сумма заказа:</strong> " . $totalPrice . " ₽</p>";
 
-        echo "<h3>Состав заказа:</h3>";
-        echo "<ul>";
-        foreach ($cartItems as $item) {
-            echo "<li>" . htmlspecialchars($item['name']) . " - " .
-                $item['amount'] . " шт. × " . $item['price'] . " ₽ = " .
-                ($item['amount'] * $item['price']) . " ₽</li>";
+        $cart = new Cart($userId);
+
+        $currentAmount = 0;
+        foreach ($cart->getItems() as $item) {
+            if ($item['product']->getId() === $productId) {
+                $currentAmount = $item['amount'];
+                break;
+            }
         }
-        echo "</ul>";
 
-        echo "<br><a href='/catalog'>Вернуться в каталог</a>";
-        echo " | ";
-        echo "<a href='/profile'>Перейти в профиль</a>";
+        $cart->updateItem($productId, $currentAmount + 1);
+
+        header("Location: /catalog");
+        exit;
+    }
+
+    public function decreaseProduct(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: /cart");
+            exit;
+        }
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (!isset($_SESSION['userId'])) {
+            header("Location: /login");
+            exit;
+        }
+
+        $userId = $_SESSION['userId'];
+        $productId = (int)($_POST['product_id'] ?? 0);
+
+        if ($productId <= 0) {
+            header("Location: /catalog");
+            exit;
+        }
+
+        $cart = new Cart($userId);
+
+        $currentAmount = 0;
+        foreach ($cart->getItems() as $item) {
+            if ($item['product']->getId() === $productId) {
+                $currentAmount = $item['amount'];
+                break;
+            }
+        }
+
+        $newAmount = max(1, $currentAmount - 1);
+
+        if ($newAmount !== $currentAmount) {
+            $cart->updateItem($productId, $newAmount);
+        }
+
+        header("Location: /catalog");
+        exit;
     }
 }
