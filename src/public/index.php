@@ -22,5 +22,32 @@ spl_autoload_register(function (string $className) {
     return false;
 });
 
-$app = new \Core\App();
+use Core\App;
+use Controllers\UserController;
+use Controllers\CatalogController;
+use Controllers\ProductController;
+use Controllers\CartController;
+use Controllers\OrderController;
+
+// Создаем экземпляр приложения
+$app = new App();
+
+// Регистрируем маршруты
+$app->addRoute('/registration', 'GET', UserController::class, 'getRegistrate');
+$app->addRoute('/registration', 'POST', UserController::class, 'registrate');
+$app->addRoute('/login', 'GET', UserController::class, 'login');
+$app->addRoute('/login', 'POST', UserController::class, 'login');
+$app->addRoute('/logout', 'GET', UserController::class, 'logout');
+$app->addRoute('/catalog', 'GET', CatalogController::class, '__construct');
+$app->addRoute('/add-product', 'GET', ProductController::class, 'showForm');
+$app->addRoute('/add-product', 'POST', ProductController::class, 'addToCart');
+$app->addRoute('/cart', 'GET', CartController::class, '__construct');
+$app->addRoute('/profile', 'GET', UserController::class, 'getProfile');
+$app->addRoute('/edit-profile', 'GET', UserController::class, 'showEditForm');
+$app->addRoute('/edit-profile', 'POST', UserController::class, 'updateProfile');
+$app->addRoute('/checkout', 'GET', CartController::class, 'showCheckout');
+$app->addRoute('/checkout', 'POST', CartController::class, 'processCheckout');
+$app->addRoute('/user-orders', 'GET', OrderController::class, 'getAllOrders');
+
+
 $app->run();

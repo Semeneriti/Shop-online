@@ -3,82 +3,18 @@ namespace Core;
 
 class App
 {
-    private array $routes = [
-        '/registration' => [
-            'GET' => [
-                'class' => 'UserController',
-                'method' => 'getRegistrate',
-            ],
-            'POST' => [
-                'class' => 'UserController',
-                'method' => 'registrate',
-            ]
-        ],
-        '/login' => [
-            'GET' => [
-                'class' => 'UserController',
-                'method' => 'login',
-            ],
-            'POST' => [
-                'class' => 'UserController',
-                'method' => 'login',
-            ]
-        ],
-        '/logout' => [
-            'GET' => [
-                'class' => 'UserController',
-                'method' => 'logout',
-            ]
-        ],
-        '/catalog' => [
-            'GET' => [
-                'class' => 'CatalogController',
-                'method' => '__construct',
-            ]
-        ],
-        '/add-product' => [
-            'GET' => [
-                'class' => 'ProductController',
-                'method' => 'showForm',
-            ],
-            'POST' => [
-                'class' => 'ProductController',
-                'method' => 'addToCart',
-            ]
-        ],
-        '/cart' => [
-            'GET' => [
-                'class' => 'CartController',
-                'method' => '__construct',
-            ]
-        ],
-        '/profile' => [
-            'GET' => [
-                'class' => 'UserController',
-                'method' => 'getProfile',
-            ]
-        ],
-        '/edit-profile' => [
-            'GET' => [
-                'class' => 'UserController',
-                'method' => 'showEditForm',
-            ],
-            'POST' => [
-                'class' => 'UserController',
-                'method' => 'updateProfile',
-            ]
-        ],
-        '/checkout' => [
-            'GET' => [
-                'class' => 'CartController',
-                'method' => 'showCheckout',
-            ],
-            'POST' => [
-                'class' => 'CartController',
-                'method' => 'processCheckout',
-            ]
-        ]
-    ];
+    private array $routes = [];
+
+    /**
+     * Добавляет маршрут в приложение
+     */
+    public function addRoute(string $route, string $routeMethod, string $className, string $method): void
+    {
+        $this->routes[$route][$routeMethod] = [
+            'class' => $className,
+            'method' => $method,
+        ];
+    }
 
     public function run(): void
     {
@@ -100,9 +36,13 @@ class App
         }
 
         $handler = $routeMethods[$requestMethod];
-
-        $class = '\\Controllers\\' . $handler['class'];
+        $class = $handler['class'];
         $method = $handler['method'];
+
+        // Проверяем, является ли класс полным пространством имен или нужно добавить пространство имен по умолчанию
+        if (strpos($class, '\\') === false) {
+            $class = '\\Controllers\\' . $class;
+        }
 
         $controller = new $class();
 
