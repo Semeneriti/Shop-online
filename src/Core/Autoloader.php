@@ -7,9 +7,9 @@ class Autoloader
     {
         spl_autoload_register(function (string $className) {
             $prefixes = [
-                'Controllers\\' => '../src/Controllers/',
-                'Core\\' => '../src/Core/',
-                'Models\\' => '../src/Models/',
+                'Controllers\\' => __DIR__ . '/../Controllers/',
+                'Core\\' => __DIR__ . '/',
+                'Models\\' => __DIR__ . '/../Models/',
             ];
 
             foreach ($prefixes as $prefix => $baseDir) {

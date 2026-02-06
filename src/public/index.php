@@ -1,6 +1,6 @@
 <?php
 
-require_once '../src/Core/Autoloader.php';
+require_once __DIR__ . '/../Core/Autoloader.php';
 
 \Core\Autoloader::register();
 

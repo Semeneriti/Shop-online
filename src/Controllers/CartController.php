@@ -121,7 +121,6 @@ class CartController
             unset($_SESSION['checkout_errors'], $_SESSION['checkout_data']);
 
             $orderDetails = $order->getDetails();
-
             require_once __DIR__ . '/../Views/order_success.php';
 
         } catch (\InvalidArgumentException $e) {
