@@ -1,224 +1,141 @@
 <?php
 namespace Controllers;
 
-use Models\Cart;
-use Models\Order;
+use Services\CartService;
+use Services\OrderService;
 
-class CartController
+class CartController extends BaseController
 {
+    private CartService $cartService;
+    private OrderService $orderService;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->cartService = new CartService();
+        $this->orderService = new OrderService();
+    }
+
     public function showCart(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->auth->requireAuth();
 
-        if (!isset($_SESSION['userId'])) {
-            header("Location: /login");
-            exit;
-        }
-
-        $userId = $_SESSION['userId'];
-
-        $cart = new Cart($userId);
-        $cartData = $cart->toArray();
+        $cartData = $this->cartService->getCartData($this->auth->getUserId());
 
         require_once __DIR__ . '/../Views/cart.php';
     }
 
     public function showCheckout(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+        $this->auth->requireAuth();
+
+        if ($this->cartService->isCartEmpty($this->auth->getUserId())) {
+            $this->auth->redirect("/cart");
         }
 
-        if (!isset($_SESSION['userId'])) {
-            header("Location: /login");
-            exit;
-        }
+        $cartData = $this->cartService->getCartData($this->auth->getUserId());
 
-        $userId = $_SESSION['userId'];
+        $errors = $this->auth->getSessionValue('checkout_errors', []);
+        $formData = $this->auth->getSessionValue('checkout_data', []);
 
-        $cart = new Cart($userId);
-
-        if ($cart->isEmpty()) {
-            header("Location: /cart");
-            exit;
-        }
-
-        $cartData = $cart->toArray();
-
-        $errors = $_SESSION['checkout_errors'] ?? [];
-        $formData = $_SESSION['checkout_data'] ?? [];
-
-        unset($_SESSION['checkout_errors'], $_SESSION['checkout_data']);
+        $this->auth->unsetSessionValue('checkout_errors');
+        $this->auth->unsetSessionValue('checkout_data');
 
         require_once __DIR__ . '/../Views/checkout.php';
     }
 
     public function processCheckout(): void
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header("Location: /checkout");
-            exit;
+        if (!$this->auth->isPostRequest()) {
+            $this->auth->redirect("/checkout");
         }
 
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->auth->requireAuth();
 
-        if (!isset($_SESSION['userId'])) {
-            header("Location: /login");
-            exit;
-        }
+        $address = $this->auth->getPostString('address');
+        $phone = $this->auth->getPostString('phone');
+        $comment = $this->auth->getPostString('comment');
 
-        $userId = $_SESSION['userId'];
+        $orderData = [
+            'address' => $address,
+            'phone' => $phone,
+            'comment' => $comment
+        ];
 
-        $address = htmlspecialchars(trim($_POST['address'] ?? ''));
-        $phone = htmlspecialchars(trim($_POST['phone'] ?? ''));
-        $comment = htmlspecialchars(trim($_POST['comment'] ?? ''));
-
-        $errors = [];
-        if (empty($address)) {
-            $errors['address'] = 'Укажите адрес доставки';
-        }
-
-        if (empty($phone)) {
-            $errors['phone'] = 'Укажите номер телефона';
-        } elseif (!preg_match('/^\+?[1-9]\d{1,14}$/', $phone)) {
-            $errors['phone'] = 'Неверный формат номера телефона';
-        }
+        $errors = $this->orderService->validateOrderData($orderData);
 
         if (!empty($errors)) {
-            $_SESSION['checkout_errors'] = $errors;
-            $_SESSION['checkout_data'] = [
-                'address' => $address,
-                'phone' => $phone,
-                'comment' => $comment
-            ];
-            header("Location: /checkout");
-            exit;
+            $this->auth->setSessionValue('checkout_errors', $errors);
+            $this->auth->setSessionValue('checkout_data', $orderData);
+            $this->auth->redirect("/checkout");
         }
 
         try {
-            $cart = new Cart($userId);
-
-            if ($cart->isEmpty()) {
-                throw new \RuntimeException("Корзина пуста");
-            }
-
-            $orderData = $cart->checkout();
-
-            $orderData['address'] = $address;
-            $orderData['phone'] = $phone;
-            $orderData['comment'] = $comment;
-
-            $order = Order::createFromCart($orderData);
+            $order = $this->orderService->createOrderFromCart($this->auth->getUserId(), $orderData);
 
             if (!$order) {
                 throw new \RuntimeException("Ошибка при создании заказа");
             }
 
-            unset($_SESSION['checkout_errors'], $_SESSION['checkout_data']);
+            $this->auth->unsetSessionValue('checkout_errors');
+            $this->auth->unsetSessionValue('checkout_data');
 
             $orderDetails = $order->getDetails();
             require_once __DIR__ . '/../Views/order_success.php';
 
         } catch (\InvalidArgumentException $e) {
-            $_SESSION['error_message'] = $e->getMessage();
-            header("Location: /cart");
-            exit;
+            $this->auth->setSessionValue('error_message', $e->getMessage());
+            $this->auth->redirect("/cart");
         } catch (\RuntimeException $e) {
-            $_SESSION['error_message'] = $e->getMessage();
-            header("Location: /checkout");
-            exit;
+            $this->auth->setSessionValue('error_message', $e->getMessage());
+            $this->auth->redirect("/checkout");
         } catch (\Exception $e) {
-            $_SESSION['error_message'] = "Произошла ошибка при оформлении заказа: " . $e->getMessage();
-            header("Location: /checkout");
-            exit;
+            $this->auth->setSessionValue('error_message', "Произошла ошибка при оформлении заказа: " . $e->getMessage());
+            $this->auth->redirect("/checkout");
         }
     }
 
     public function increaseProduct(): void
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header("Location: /cart");
-            exit;
+        if (!$this->auth->isPostRequest()) {
+            $this->auth->redirect("/cart");
         }
 
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->auth->requireAuth();
 
-        if (!isset($_SESSION['userId'])) {
-            header("Location: /login");
-            exit;
-        }
-
-        $userId = $_SESSION['userId'];
-        $productId = (int)($_POST['product_id'] ?? 0);
+        $productId = $this->auth->getPostInt('product_id');
 
         if ($productId <= 0) {
-            header("Location: /catalog");
-            exit;
+            $this->auth->redirect("/catalog");
         }
 
-        $cart = new Cart($userId);
+        $currentAmount = $this->cartService->getCurrentAmount($this->auth->getUserId(), $productId);
+        $this->cartService->updateItem($this->auth->getUserId(), $productId, $currentAmount + 1);
 
-        $currentAmount = 0;
-        foreach ($cart->getItems() as $item) {
-            if ($item['product']->getId() === $productId) {
-                $currentAmount = $item['amount'];
-                break;
-            }
-        }
-
-        $cart->updateItem($productId, $currentAmount + 1);
-
-        header("Location: /catalog");
-        exit;
+        $this->auth->redirect("/catalog");
     }
 
     public function decreaseProduct(): void
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header("Location: /cart");
-            exit;
+        if (!$this->auth->isPostRequest()) {
+            $this->auth->redirect("/cart");
         }
 
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->auth->requireAuth();
 
-        if (!isset($_SESSION['userId'])) {
-            header("Location: /login");
-            exit;
-        }
-
-        $userId = $_SESSION['userId'];
-        $productId = (int)($_POST['product_id'] ?? 0);
+        $productId = $this->auth->getPostInt('product_id');
 
         if ($productId <= 0) {
-            header("Location: /catalog");
-            exit;
+            $this->auth->redirect("/catalog");
         }
 
-        $cart = new Cart($userId);
-
-        $currentAmount = 0;
-        foreach ($cart->getItems() as $item) {
-            if ($item['product']->getId() === $productId) {
-                $currentAmount = $item['amount'];
-                break;
-            }
-        }
-
+        $currentAmount = $this->cartService->getCurrentAmount($this->auth->getUserId(), $productId);
         $newAmount = max(1, $currentAmount - 1);
 
         if ($newAmount !== $currentAmount) {
-            $cart->updateItem($productId, $newAmount);
+            $this->cartService->updateItem($this->auth->getUserId(), $productId, $newAmount);
         }
 
-        header("Location: /catalog");
-        exit;
+        $this->auth->redirect("/catalog");
     }
 }

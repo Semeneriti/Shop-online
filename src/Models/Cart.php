@@ -13,6 +13,11 @@ class Cart extends Model
         $this->loadItems();
     }
 
+    protected static function getTableName(): string
+    {
+        return 'user_products';
+    }
+
     // Геттеры
     public function getUserId(): int
     {
@@ -64,7 +69,8 @@ class Cart extends Model
             throw new \InvalidArgumentException("Недостаточно товара на складе");
         }
 
-        $sql = "INSERT INTO user_products (user_id, product_id, amount) 
+        $tableName = self::getTableName();
+        $sql = "INSERT INTO {$tableName} (user_id, product_id, amount) 
                 VALUES (:user_id, :product_id, :amount) 
                 ON CONFLICT (user_id, product_id) 
                 DO UPDATE SET amount = EXCLUDED.amount";
@@ -98,7 +104,8 @@ class Cart extends Model
             throw new \InvalidArgumentException("Недостаточно товара на складе");
         }
 
-        $sql = "UPDATE user_products 
+        $tableName = self::getTableName();
+        $sql = "UPDATE {$tableName} 
                 SET amount = :amount 
                 WHERE user_id = :user_id AND product_id = :product_id";
 
@@ -118,7 +125,8 @@ class Cart extends Model
 
     public function removeItem(int $productId): bool
     {
-        $sql = "DELETE FROM user_products 
+        $tableName = self::getTableName();
+        $sql = "DELETE FROM {$tableName} 
                 WHERE user_id = :user_id AND product_id = :product_id";
 
         $stmt = $this->pdo->prepare($sql);
@@ -136,7 +144,8 @@ class Cart extends Model
 
     public function clear(): bool
     {
-        $sql = "DELETE FROM user_products WHERE user_id = :user_id";
+        $tableName = self::getTableName();
+        $sql = "DELETE FROM {$tableName} WHERE user_id = :user_id";
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([':user_id' => $this->userId]);
 
@@ -157,10 +166,11 @@ class Cart extends Model
     {
         $this->items = [];
 
-        $sql = 'SELECT p.*, up.amount, up.id as cart_item_id 
-                FROM user_products up 
+        $tableName = self::getTableName();
+        $sql = "SELECT p.*, up.amount, up.id as cart_item_id 
+                FROM {$tableName} up 
                 JOIN products p ON up.product_id = p.id 
-                WHERE up.user_id = :user_id';
+                WHERE up.user_id = :user_id";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['user_id' => $this->userId]);
@@ -246,5 +256,4 @@ class Cart extends Model
             'total_price' => $this->getTotalPrice(),
             'is_empty' => $this->isEmpty()
         ];
-    }
-}
+    }}

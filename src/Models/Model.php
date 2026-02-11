@@ -42,4 +42,9 @@ abstract class Model
 
         return self::$staticPdo;
     }
+
+    /**
+     * Получить имя таблицы для модели
+     */
+    abstract protected static function getTableName(): string;
 }

@@ -2,41 +2,39 @@
 namespace Controllers;
 
 use Models\Product;
-use Models\Cart;
+use Services\CartService;
 
-class CatalogController
+class CatalogController extends BaseController
 {
-    public function __construct(): void
+    private CartService $cartService;
+
+    public function __construct()
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        parent::__construct();
+        $this->cartService = new CartService();
+    }
 
-        $userId = $_SESSION['userId'] ?? null;
-
-        // Получаем все товары
+    public function index(): void
+    {
         $products = Product::getAll();
 
-        // Инициализируем переменные для корзины
         $cart = null;
         $cartItems = [];
         $cartTotalPrice = 0.0;
         $cartItemsCount = 0;
 
-        // Если пользователь авторизован, загружаем корзину
-        if ($userId) {
-            $cart = new Cart($userId);
-            $cartItems = $cart->getItems();
-            $cartTotalPrice = $cart->getTotalPrice();
-            $cartItemsCount = $cart->getTotalAmount();
+        if (!$this->auth->isGuest()) {
+            $userId = $this->auth->getUserId();
+            $cartItems = $this->cartService->getCartItems($userId);
+            $cartTotalPrice = $this->cartService->getCartTotalPrice($userId);
+            $cartItemsCount = $this->cartService->getCartTotalAmount($userId);
         }
 
-        // Получаем сообщения из сессии
-        $successMessage = $_SESSION['success_message'] ?? null;
-        $errorMessage = $_SESSION['error_message'] ?? null;
+        $successMessage = $this->auth->getSessionValue('success_message');
+        $errorMessage = $this->auth->getSessionValue('error_message');
 
-        // Очищаем сообщения после получения
-        unset($_SESSION['success_message'], $_SESSION['error_message']);
+        $this->auth->unsetSessionValue('success_message');
+        $this->auth->unsetSessionValue('error_message');
 
         require_once __DIR__ . '/../Views/catalog.php';
     }

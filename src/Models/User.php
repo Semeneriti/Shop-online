@@ -28,6 +28,11 @@ class User extends Model
         $this->updatedAt = $updatedAt ? new \DateTime($updatedAt) : null;
     }
 
+    protected static function getTableName(): string
+    {
+        return 'users';
+    }
+
     // Геттеры
     public function getId(): ?int
     {
@@ -58,7 +63,8 @@ class User extends Model
     public static function findByEmail(string $email): ?User
     {
         $pdo = self::getConnection();
-        $stmt = $pdo->prepare('SELECT * FROM users WHERE email = :email');
+        $tableName = self::getTableName();
+        $stmt = $pdo->prepare("SELECT * FROM {$tableName} WHERE email = :email");
         $stmt->execute(['email' => $email]);
         $data = $stmt->fetch();
 
@@ -72,7 +78,8 @@ class User extends Model
     public static function findById(int $id): ?User
     {
         $pdo = self::getConnection();
-        $stmt = $pdo->prepare('SELECT * FROM users WHERE id = :id');
+        $tableName = self::getTableName();
+        $stmt = $pdo->prepare("SELECT * FROM {$tableName} WHERE id = :id");
         $stmt->execute(['id' => $id]);
         $data = $stmt->fetch();
 
@@ -94,7 +101,8 @@ class User extends Model
 
     private function create(): bool
     {
-        $sql = "INSERT INTO users (name, email, password, created_at, updated_at) 
+        $tableName = self::getTableName();
+        $sql = "INSERT INTO {$tableName} (name, email, password, created_at, updated_at) 
                 VALUES (:name, :email, :password, NOW(), NOW()) 
                 RETURNING id, created_at, updated_at";
 
@@ -115,7 +123,8 @@ class User extends Model
 
     private function update(): bool
     {
-        $sql = "UPDATE users 
+        $tableName = self::getTableName();
+        $sql = "UPDATE {$tableName} 
                 SET name = :name, email = :email, password = :password, updated_at = NOW()
                 WHERE id = :id
                 RETURNING updated_at";

@@ -1,87 +1,139 @@
 <?php
-
-session_start();
-
-if (empty($_SESSION['userId'])) {
-    header("Location: /login");
-    exit;
-}
-
-$userId = $_SESSION['userId'];
-
-// Подключаемся к базе
-$pdo = new PDO("pgsql:host=db;port=5432;dbname=postgres", "semen", "0000");
-
-// Получаем пользователя
-$stmt = $pdo->prepare('SELECT * FROM users WHERE id = :id');
-$stmt->execute(['id' => $userId]);
-$user = $stmt->fetch();
-
-
-if (!$user) {
-    echo "User not found!";
-    exit;
-}
+/** @var array $userData */
+/** @var array $errors */
 ?>
-<form action="/update-profile" method="POST">
-    <h2>Edit Profile</h2>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактирование профиля</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <div class="input-container">
-        <i class="fa fa-user icon"></i>
-        <input class="input-field" type="text" placeholder="Name" name="name" value="<?php echo $user['name']; ?>">
-    </div>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
 
-    <div class="input-container">
-        <i class="fa fa-envelope icon"></i>
-        <input class="input-field" type="text" placeholder="Email" name="email" value="<?php echo $user['email']; ?>">
-    </div>
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
 
-    <div class="input-container">
-        <i class="fa fa-key icon"></i>
-        <input class="input-field" type="password" placeholder="New Password (leave empty to keep current)" name="password">
-    </div>
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
 
-    <button type="submit" class="btn">Update Profile</button>
-</form>
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-<style>
-    * {box-sizing: border-box;}
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
 
-    .input-container {
-        display: flex;
-        width: 100%;
-        margin-bottom: 15px;
-    }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
 
-    .icon {
-        padding: 10px;
-        background: dodgerblue;
-        color: white;
-        min-width: 50px;
-        text-align: center;
-    }
+        .form-control:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52,152,219,0.1);
+        }
 
-    .input-field {
-        width: 100%;
-        padding: 10px;
-        outline: none;
-    }
+        .btn {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
 
-    .input-field:focus {
-        border: 2px solid dodgerblue;
-    }
+        .btn:hover {
+            background-color: #2980b9;
+        }
 
-    .btn {
-        background-color: dodgerblue;
-        color: white;
-        padding: 15px 20px;
-        border: none;
-        cursor: pointer;
-        width: 100%;
-        opacity: 0.9;
-    }
+        .btn-secondary {
+            background-color: #95a5a6;
+            margin-top: 10px;
+        }
 
-    .btn:hover {
-        opacity: 1;
-    }
-</style>
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        .info-text {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #7f8c8d;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            color: #3498db;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>✏️ Редактирование профиля</h2>
+
+    <?php if (isset($_SESSION['success_message'])): ?>
+        <div class="success-message">
+            <?= htmlspecialchars($_SESSION['success_message']) ?>
+            <?php unset($_SESSION['success_message']); ?>
+        </div>
+    <?php endif; ?>
+
+    <form action="/update-profile" method="POST">
+        <div class

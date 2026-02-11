@@ -1,76 +1,110 @@
+<?php
+/** @var array $user */
+/** @var array $orders */
+/** @var array $cartItems */
+?>
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Profile</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
             padding: 20px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        table, th, td {
-            border: 1px solid #ddd;
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
         }
-        th, td {
-            padding: 10px;
-            text-align: left;
+
+        .nav a {
+            color: #3498db;
+            text-decoration: none;
+            margin-left: 20px;
+            transition: color 0.3s;
         }
-        th {
-            background-color: #f2f2f2;
+
+        .nav a:hover {
+            color: #2980b9;
+            text-decoration: underline;
         }
-        .profile-info {
+
+        .profile-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
             margin-bottom: 30px;
         }
-        .profile-info h2 {
-            color: #333;
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
-    </style>
-</head>
-<body>
-<h1>User Profile</h1>
 
-<div class="profile-info">
-    <h2>Информация о пользователе:</h2>
-    <?php if ($user): ?>
-        <p><strong>Имя:</strong> <?php echo htmlspecialchars($user['name']); ?></p>
-        <p><strong>Email:</strong> <?php echo htmlspecialchars($user['email']); ?></p>
-        <a href="/edit-profile">Редактировать профиль</a>
-    <?php else: ?>
-        <p>Пользователь не найден</p>
-    <?php endif; ?>
-</div>
+        .profile-header h2 {
+            color: #333;
+            font-size: 22px;
+        }
 
-<h2>История заказов</h2>
-<?php if (!empty($orders)): ?>
-    <table border="1" cellpadding="10" cellspacing="0">
-        <tr>
-            <th>Номер заказа</th>
-            <th>Дата</th>
-            <th>Адрес</th>
-            <th>Телефон</th>
-            <th>Товаров</th>
-            <th>Сумма</th>
-        </tr>
-        <?php foreach ($orders as $order): ?>
-            <tr>
-                <td>#<?php echo $order['id']; ?></td>
-                <td><?php echo date('d.m.Y H:i', strtotime($order['created_at'])); ?></td>
-                <td><?php echo htmlspecialchars($order['address']); ?></td>
-                <td><?php echo htmlspecialchars($order['phone']); ?></td>
-                <td><?php echo $order['items_count']; ?> шт.</td>
-                <td><?php echo $order['total_price']; ?> ₽</td>
-            </tr>
-        <?php endforeach; ?>
-    </table>
-<?php else: ?>
-    <p>У вас еще нет заказов</p>
-<?php endif; ?>
+        .profile-info {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+        }
 
-<br>
-<a href="/catalog">Вернуться в каталог</a>
-</body>
-</html>
+        .profile-info p {
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .profile-info strong {
+            color: #333;
+            min-width: 100px;
+            display: inline-block;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #298

@@ -2,23 +2,25 @@
 namespace Controllers;
 
 use Models\User;
-use Models\Cart;
-use Models\Order;
+use Services\CartService;
+use Services\OrderService;
 
-class UserController
+class UserController extends BaseController
 {
+    private CartService $cartService;
+    private OrderService $orderService;
+
     public function __construct()
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        parent::__construct();
+        $this->cartService = new CartService();
+        $this->orderService = new OrderService();
     }
 
     public function getRegistrate(): void
     {
-        if (isset($_SESSION['userId'])) {
-            header('Location: /catalog');
-            exit;
+        if (!$this->auth->isGuest()) {
+            $this->auth->redirect('/catalog');
         }
 
         require_once __DIR__ . '/../Views/registration.php';
@@ -26,59 +28,53 @@ class UserController
 
     public function registrate(): void
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /registration');
-            exit;
+        if (!$this->auth->isPostRequest()) {
+            $this->auth->redirect('/registration');
+        }
+
+        if (!$this->auth->isGuest()) {
+            $this->auth->redirect('/catalog');
         }
 
         $errors = $this->validate($_POST);
 
         if (empty($errors)) {
-            $name = htmlspecialchars(trim($_POST["name"]));
-            $email = htmlspecialchars(trim($_POST["email"]));
-            $password = $_POST["password"];
+            $name = $this->auth->getPostString('name');
+            $email = $this->auth->getPostString('email');
+            $password = $this->auth->getPostParam('password');
 
-            // Проверяем, существует ли пользователь
             $existingUser = User::findByEmail($email);
 
             if ($existingUser) {
                 $errors['email'] = 'Пользователь с таким email уже существует';
             } else {
-                // Создаем нового пользователя
                 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
                 $user = new User($name, $email, $passwordHash);
 
                 if ($user->save()) {
-                    // Автоматический вход после регистрации
-                    $_SESSION['userId'] = $user->getId();
-                    $_SESSION['userName'] = $user->getName();
-
-                    header('Location: /catalog');
-                    exit;
+                    $this->auth->login($user);
+                    $this->auth->redirect('/catalog');
                 } else {
                     $errors[] = 'Ошибка при создании пользователя';
                 }
             }
         }
 
-        // Если есть ошибки, показываем форму снова
         require_once __DIR__ . '/../Views/registration.php';
     }
 
     public function login(): void
     {
-        if (isset($_SESSION['userId'])) {
-            header('Location: /catalog');
-            exit;
+        if (!$this->auth->isGuest()) {
+            $this->auth->redirect('/catalog');
         }
 
         $errors = [];
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = htmlspecialchars(trim($_POST['email'] ?? ''));
-            $password = $_POST['password'] ?? '';
+        if ($this->auth->isPostRequest()) {
+            $email = $this->auth->getPostString('email');
+            $password = $this->auth->getPostParam('password');
 
-            // Валидация
             if (empty($email)) {
                 $errors['email'] = 'Введите email';
             }
@@ -93,12 +89,8 @@ class UserController
                 if (!$user) {
                     $errors['general'] = 'Неверный email или пароль';
                 } elseif ($user->verifyPassword($password)) {
-                    // Успешный вход
-                    $_SESSION['userId'] = $user->getId();
-                    $_SESSION['userName'] = $user->getName();
-
-                    header('Location: /catalog');
-                    exit;
+                    $this->auth->login($user);
+                    $this->auth->redirect('/catalog');
                 } else {
                     $errors['general'] = 'Неверный email или пароль';
                 }
@@ -110,102 +102,46 @@ class UserController
 
     public function logout(): void
     {
-        // Очищаем сессию
-        $_SESSION = [];
-
-        // Удаляем куки сессии
-        if (ini_get("session.use_cookies")) {
-            $params = session_get_cookie_params();
-            setcookie(
-                session_name(),
-                '',
-                time() - 42000,
-                $params["path"],
-                $params["domain"],
-                $params["secure"],
-                $params["httponly"]
-            );
-        }
-
-        session_destroy();
-
-        header("Location: /login");
-        exit;
+        $this->auth->logout();
+        $this->auth->redirect("/login");
     }
 
     public function getProfile(): void
     {
-        if (!isset($_SESSION['userId'])) {
-            header("Location: /login");
-            exit;
-        }
+        $this->auth->requireAuth();
 
-        $userId = $_SESSION['userId'];
-        $user = User::findById($userId);
-
-        if (!$user) {
-            $this->logout();
-            exit;
-        }
-
-        // Получаем корзину пользователя
-        $cart = new Cart($userId);
-        $cartItems = $cart->getItems();
-
-        // Получаем заказы пользователя
-        $orders = Order::findByUserId($userId);
+        $userId = $this->auth->getUserId();
+        $cartItems = $this->cartService->getCartItems($userId);
+        $orders = $this->orderService->getOrdersByUserId($userId);
 
         require_once __DIR__ . '/../Views/profile.php';
     }
 
     public function showEditForm(): void
     {
-        if (!isset($_SESSION['userId'])) {
-            header("Location: /login");
-            exit;
-        }
+        $this->auth->requireAuth();
 
-        $userId = $_SESSION['userId'];
-        $user = User::findById($userId);
-
-        if (!$user) {
-            $this->logout();
-            exit;
-        }
-
-        // Передаем данные пользователя в форму
-        $userData = $user->toArray();
+        $userData = $this->auth->getCurrentUser()->toArray();
 
         require_once __DIR__ . '/../Views/edit_profile.php';
     }
 
     public function updateProfile(): void
     {
-        if (!isset($_SESSION['userId'])) {
-            header("Location: /login");
-            exit;
-        }
+        $this->auth->requireAuth();
 
-        $userId = $_SESSION['userId'];
-        $user = User::findById($userId);
-
-        if (!$user) {
-            $this->logout();
-            exit;
-        }
-
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header("Location: /edit-profile");
-            exit;
+        if (!$this->auth->isPostRequest()) {
+            $this->auth->redirect("/edit-profile");
         }
 
         $errors = [];
-        $name = htmlspecialchars(trim($_POST['name'] ?? ''));
-        $email = htmlspecialchars(trim($_POST['email'] ?? ''));
-        $password = $_POST['password'] ?? '';
-        $passwordConfirm = $_POST['password_confirm'] ?? '';
+        $name = $this->auth->getPostString('name');
+        $email = $this->auth->getPostString('email');
+        $password = $this->auth->getPostParam('password');
+        $passwordConfirm = $this->auth->getPostParam('password_confirm');
 
-        // Валидация
+        $user = $this->auth->getCurrentUser();
+
         if (empty($name)) {
             $errors['name'] = 'Введите имя';
         }
@@ -216,7 +152,6 @@ class UserController
             $errors['email'] = 'Неверный формат email';
         }
 
-        // Проверка email на уникальность (если изменился)
         if ($email !== $user->getEmail()) {
             $existingUser = User::findByEmail($email);
             if ($existingUser) {
@@ -224,7 +159,6 @@ class UserController
             }
         }
 
-        // Проверка пароля (если указан)
         if (!empty($password)) {
             if (strlen($password) < 6) {
                 $errors['password'] = 'Пароль должен быть не менее 6 символов';
@@ -234,23 +168,19 @@ class UserController
         }
 
         if (empty($errors)) {
-            // Обновляем профиль
             try {
                 $user->updateProfile($name, $email, !empty($password) ? $password : null);
 
-                // Обновляем имя в сессии
-                $_SESSION['userName'] = $name;
+                $this->auth->setSessionValue('userName', $name);
 
-                // Редирект на профиль с сообщением об успехе
-                $_SESSION['success_message'] = 'Профиль успешно обновлен';
-                header("Location: /profile");
-                exit;
+                $this->auth->setSessionValue('success_message', 'Профиль успешно обновлен');
+                $this->auth->redirect("/profile");
             } catch (\Exception $e) {
                 $errors[] = 'Ошибка при обновлении профиля: ' . $e->getMessage();
             }
         }
 
-        // Если есть ошибки, показываем форму снова
+        $userData = $user->toArray();
         require_once __DIR__ . '/../Views/edit_profile.php';
     }
 
@@ -258,7 +188,6 @@ class UserController
     {
         $errors = [];
 
-        // Валидация имени
         if (isset($data['name'])) {
             $name = htmlspecialchars(trim($data["name"]));
             if (empty($name)) {
@@ -270,7 +199,6 @@ class UserController
             $errors['name'] = 'Заполните поле Name';
         }
 
-        // Валидация email
         if (isset($data['email'])) {
             $email = htmlspecialchars(trim($data["email"]));
             if (empty($email)) {
@@ -282,7 +210,6 @@ class UserController
             $errors['email'] = 'Введите Email';
         }
 
-        // Валидация пароля
         if (isset($data['password'])) {
             $password = $data["password"];
             if (empty($password)) {
@@ -294,7 +221,6 @@ class UserController
             $errors['password'] = 'Пароль должен быть заполнен';
         }
 
-        // Подтверждение пароля
         if (isset($data['passwordRepeat'])) {
             $passwordRepeat = $data['passwordRepeat'];
             if (empty($passwordRepeat)) {

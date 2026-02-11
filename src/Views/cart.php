@@ -1,92 +1,233 @@
-<div class="cart-container">
-    <h1>My Cart</h1>
+<?php
+/** @var array $cartData */
+$cartItems = $cartData['items'] ?? [];
+$totalPrice = $cartData['total_price'] ?? 0;
+?>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <?php if (count($cartItems) > 0): ?>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #555;
+            font-weight: 600;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+            color: #666;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .total-row td {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+            border-top: 2px solid #dee2e6;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-green {
+            background-color: #27ae60;
+        }
+
+        .btn-green:hover {
+            background-color: #229954;
+        }
+
+        .btn-red {
+            background-color: #e74c3c;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-red:hover {
+            background-color: #c0392b;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .checkout-link {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #27ae60;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .checkout-link:hover {
+            background-color: #229954;
+        }
+
+        .continue-link {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .continue-link:hover {
+            text-decoration: underline;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quantity-form {
+            display: inline;
+        }
+
+        .quantity-btn {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🛒 Моя корзина</h1>
+
+    <?php if (!empty($cartItems)): ?>
         <table>
+            <thead>
             <tr>
-                <th>Product</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Subtotal</th>
-                <th>Action</th>
+                <th>Товар</th>
+                <th>Цена</th>
+                <th>Количество</th>
+                <th>Сумма</th>
+                <th>Действие</th>
             </tr>
+            </thead>
+            <tbody>
             <?php foreach ($cartItems as $item): ?>
-                <?php $subtotal = $item['price'] * $item['amount']; ?>
+                <?php
+                $product = $item['product'];
+                $subtotal = $item['total_price'];
+                ?>
                 <tr>
-                    <td><?php echo $item['name']; ?></td>
-                    <td>$<?php echo $item['price']; ?></td>
-                    <td><?php echo $item['amount']; ?></td>
-                    <td>$<?php echo $subtotal; ?></td>
                     <td>
-                        <a href="/remove-from-cart?id=<?php echo $item['cart_id']; ?>">Remove</a>
+                        <strong><?= htmlspecialchars($product->getName()) ?></strong>
+                    </td>
+                    <td><?= number_format($product->getPrice(), 2, '.', ' ') ?> ₽</td>
+                    <td>
+                        <div class="quantity-control">
+                            <form action="/cart/decrease" method="POST" class="quantity-form">
+                                <input type="hidden" name="product_id" value="<?= $product->getId() ?>">
+                                <button type="submit" class="btn btn-red quantity-btn">−</button>
+                            </form>
+                            <span style="font-weight: bold;"><?= $item['amount'] ?></span>
+                            <form action="/cart/increase" method="POST" class="quantity-form">
+                                <input type="hidden" name="product_id" value="<?= $product->getId() ?>">
+                                <button type="submit" class="btn btn-green quantity-btn">+</button>
+                            </form>
+                        </div>
+                    </td>
+                    <td><strong><?= number_format($subtotal, 2, '.', ' ') ?> ₽</strong></td>
+                    <td>
+                        <form action="/cart/remove" method="POST">
+                            <input type="hidden" name="product_id" value="<?= $product->getId() ?>">
+                            <button type="submit" class="btn btn-red">Удалить</button>
+                        </form>
                     </td>
                 </tr>
             <?php endforeach; ?>
-            <tr>
-                <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
-                <td><strong>$<?php echo $totalPrice; ?></strong></td>
+            <tr class="total-row">
+                <td colspan="3" style="text-align: right;"><strong>Итого:</strong></td>
+                <td><strong><?= number_format($totalPrice, 2, '.', ' ') ?> ₽</strong></td>
                 <td></td>
             </tr>
+            </tbody>
         </table>
 
-        <br>
-        <button onclick="alert('Checkout feature coming soon!')">Checkout</button>
+        <div class="actions">
+            <a href="/catalog" class="continue-link">← Продолжить покупки</a>
+            <a href="/checkout" class="checkout-link">✅ Оформить заказ</a>
+        </div>
     <?php else: ?>
-        <p>Your cart is empty.</p>
+        <div class="empty-cart">
+            <p style="font-size: 18px; margin-bottom: 20px;">Ваша корзина пуста</p>
+            <p style="margin-bottom: 30px;">Добавьте товары из каталога</p>
+            <a href="/catalog" class="btn">Перейти в каталог</a>
+        </div>
     <?php endif; ?>
-
-    <br>
-    <a href="/catalog">Continue Shopping</a>
 </div>
-<?php if (!empty($cartItems)): ?>
-    <br><br>
-    <a href="/checkout" style="font-size: 18px; padding: 10px 20px; background: green; color: white; text-decoration: none;">
-        Перейти к оформлению заказа
-    </a>
-<?php endif; ?>
-<style>
-    .cart-container {
-        padding: 20px;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
-    }
-
-    table, th, td {
-        border: 1px solid #ddd;
-    }
-
-    th, td {
-        padding: 10px;
-        text-align: left;
-    }
-
-    th {
-        background-color: #f2f2f2;
-    }
-
-    a {
-        color: dodgerblue;
-        text-decoration: none;
-    }
-
-    a:hover {
-        text-decoration: underline;
-    }
-
-    button {
-        background-color: green;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        cursor: pointer;
-        border-radius: 5px;
-    }
-
-    button:hover {
-        background-color: darkgreen;
-    }
-</style>
+</body>
+</html>

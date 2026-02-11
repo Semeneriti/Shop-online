@@ -38,6 +38,11 @@ class Order extends Model
         $this->updatedAt = $updatedAt ? new \DateTime($updatedAt) : new \DateTime();
     }
 
+    protected static function getTableName(): string
+    {
+        return 'orders';
+    }
+
     // Геттеры
     public function getId(): ?int
     {
@@ -96,7 +101,8 @@ class Order extends Model
     public static function findById(int $id): ?Order
     {
         $pdo = self::getConnection();
-        $stmt = $pdo->prepare('SELECT * FROM orders WHERE id = :id');
+        $tableName = self::getTableName();
+        $stmt = $pdo->prepare("SELECT * FROM {$tableName} WHERE id = :id");
         $stmt->execute(['id' => $id]);
         $data = $stmt->fetch();
 
@@ -113,13 +119,14 @@ class Order extends Model
     public static function findByUserId(int $userId): array
     {
         $pdo = self::getConnection();
-        $stmt = $pdo->prepare('
+        $tableName = self::getTableName();
+        $stmt = $pdo->prepare("
             SELECT o.*, 
                    (SELECT COUNT(*) FROM order_products op WHERE op.order_id = o.id) as items_count
-            FROM orders o 
+            FROM {$tableName} o 
             WHERE o.user_id = :user_id 
             ORDER BY o.created_at DESC
-        ');
+        ");
         $stmt->execute(['user_id' => $userId]);
 
         $orders = [];
@@ -139,9 +146,10 @@ class Order extends Model
             $pdo->beginTransaction();
 
             // Создаем заказ
-            $sql = 'INSERT INTO orders (user_id, address, phone, comment, total_price, status, created_at, updated_at) 
+            $tableName = self::getTableName();
+            $sql = "INSERT INTO {$tableName} (user_id, address, phone, comment, total_price, status, created_at, updated_at) 
                     VALUES (:user_id, :address, :phone, :comment, :total_price, :status, NOW(), NOW())
-                    RETURNING id, created_at, updated_at';
+                    RETURNING id, created_at, updated_at";
 
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
@@ -164,9 +172,9 @@ class Order extends Model
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([
                     ':order_id' => $orderId,
-                    ':product_id' => $item['product']->getId(),
+                    ':product_id' => $item['product_id'],
                     ':amount' => $item['amount'],
-                    ':price' => $item['product']->getPrice()
+                    ':price' => $item['price']
                 ]);
             }
 
