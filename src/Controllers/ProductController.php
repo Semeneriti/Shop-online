@@ -90,6 +90,9 @@ class ProductController extends BaseController
         $this->auth->unsetSessionValue('success_message');
         $this->auth->unsetSessionValue('error_message');
 
+        // Передаем auth в шаблон
+        $auth = $this->auth;
+
         require_once __DIR__ . '/../Views/product.php';
     }
 

@@ -8,6 +8,7 @@ class Product extends Model
     private string $description;
     private float $price;
     private int $stock;
+    private ?string $imageUrl;
     private ?\DateTime $createdAt;
     private ?\DateTime $updatedAt;
 
@@ -18,7 +19,8 @@ class Product extends Model
         int $stock,
         ?int $id = null,
         ?string $createdAt = null,
-        ?string $updatedAt = null
+        ?string $updatedAt = null,
+        ?string $imageUrl = null
     ) {
         parent::__construct();
 
@@ -27,6 +29,7 @@ class Product extends Model
         $this->description = $description;
         $this->price = $price;
         $this->stock = $stock;
+        $this->imageUrl = $imageUrl ?? '/images/no-image.png';
         $this->createdAt = $createdAt ? new \DateTime($createdAt) : null;
         $this->updatedAt = $updatedAt ? new \DateTime($updatedAt) : null;
     }
@@ -60,6 +63,11 @@ class Product extends Model
     public function getStock(): int
     {
         return $this->stock;
+    }
+
+    public function getImageUrl(): string
+    {
+        return $this->imageUrl;
     }
 
     public function getCreatedAt(): ?\DateTime
@@ -127,7 +135,7 @@ class Product extends Model
         return self::fromArray($data);
     }
 
-    // Преобразование из массива
+    // Преобразование из массива - ЭТО САМОЕ ВАЖНОЕ!
     public static function fromArray(array $data): Product
     {
         return new self(
@@ -137,7 +145,8 @@ class Product extends Model
             (int) $data['stock'],
             $data['id'] ?? null,
             $data['created_at'] ?? null,
-            $data['updated_at'] ?? null
+            $data['updated_at'] ?? null,
+            $data['image_url'] ?? null  // 👈 ВОТ ЭТА СТРОКА ДОЛЖНА БЫТЬ!
         );
     }
 
@@ -150,6 +159,7 @@ class Product extends Model
             'description' => $this->description,
             'price' => $this->price,
             'stock' => $this->stock,
+            'image_url' => $this->imageUrl,
             'created_at' => $this->createdAt ? $this->createdAt->format('Y-m-d H:i:s') : null,
             'updated_at' => $this->updatedAt ? $this->updatedAt->format('Y-m-d H:i:s') : null,
             'average_rating' => $this->getAverageRating(),

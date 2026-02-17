@@ -2,6 +2,8 @@
 
 namespace Services;
 
+use Models\User;
+
 class AuthService
 {
     private array $session = [];
@@ -145,9 +147,9 @@ class AuthService
         return $this->userId;
     }
 
-    private function getUserName(): ?string
+
+    public function getUserName(): ?string
     {
         return $this->userName;
     }
-
 }

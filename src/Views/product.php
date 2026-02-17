@@ -83,6 +83,18 @@
             margin-bottom: 30px;
         }
 
+        .product-image {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .product-image img {
+            max-width: 300px;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
         .product-name {
             font-size: 28px;
             margin-bottom: 15px;
@@ -305,7 +317,7 @@
         <div class="nav">
             <a href="/catalog">📚 Каталог</a>
             <a href="/cart">🛒 Корзина</a>
-            <?php if (!$auth->isGuest()): ?>
+            <?php if (isset($auth) && !$auth->isGuest()): ?>
                 <a href="/profile">👤 Профиль</a>
                 <a href="/logout">🚪 Выход</a>
             <?php else: ?>
@@ -324,6 +336,14 @@
     <?php endif; ?>
 
     <div class="product-card">
+        <?php if ($product->getImageUrl()): ?>
+            <div class="product-image">
+                <img src="<?= htmlspecialchars($product->getImageUrl()) ?>"
+                     alt="<?= htmlspecialchars($product->getName()) ?>"
+                     onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
+            </div>
+        <?php endif; ?>
+
         <h2 class="product-name"><?= htmlspecialchars($product->getName()) ?></h2>
         <p class="product-description"><?= nl2br(htmlspecialchars($product->getDescription())) ?></p>
 
@@ -341,7 +361,7 @@
     <div class="reviews-section">
         <h3 class="reviews-title">📝 Отзывы покупателей</h3>
 
-        <?php if (!$auth->isGuest()): ?>
+        <?php if (isset($auth) && !$auth->isGuest()): ?>
             <div class="review-form">
                 <h4 style="margin-bottom: 20px; color: #333;">Оставить отзыв</h4>
                 <form method="POST" action="/product/review">

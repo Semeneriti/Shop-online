@@ -156,17 +156,39 @@
             <h2>Ваш заказ:</h2>
             <ul class="order-items">
                 <?php foreach ($cartData['items'] as $item): ?>
+                    <?php
+                    // Получаем данные о товаре (универсальный код)
+                    $productData = $item['product'] ?? [];
+                    $amount = $item['amount'] ?? 1;
+
+                    // Определяем название и цену товара (работает и с объектом, и с массивом)
+                    if (is_object($productData) && method_exists($productData, 'getName')) {
+                        // Это объект Product с методами
+                        $productName = $productData->getName();
+                        $productPrice = $productData->getPrice();
+                    } elseif (is_array($productData)) {
+                        // Это массив с данными
+                        $productName = $productData['name'] ?? 'Товар';
+                        $productPrice = $productData['price'] ?? 0;
+                    } else {
+                        // Неизвестный формат
+                        $productName = 'Товар';
+                        $productPrice = 0;
+                    }
+
+                    $itemTotal = $item['total_price'] ?? ($productPrice * $amount);
+                    ?>
                     <li>
-                        <strong><?= htmlspecialchars($item['product']->getName()) ?></strong><br>
+                        <strong><?= htmlspecialchars($productName) ?></strong><br>
                         <span style="color: #666;">
-                                <?= $item['amount'] ?> шт. × <?= number_format($item['product']->getPrice(), 2, '.', ' ') ?> ₽
-                                = <strong><?= number_format($item['total_price'], 2, '.', ' ') ?> ₽</strong>
-                            </span>
+                            <?= $amount ?> шт. × <?= number_format($productPrice, 2, '.', ' ') ?> ₽
+                            = <strong><?= number_format($itemTotal, 2, '.', ' ') ?> ₽</strong>
+                        </span>
                     </li>
                 <?php endforeach; ?>
             </ul>
             <div class="total-price">
-                Итого: <?= number_format($cartData['total_price'], 2, '.', ' ') ?> ₽
+                Итого: <?= number_format($cartData['total_price'] ?? 0, 2, '.', ' ') ?> ₽
             </div>
         </div>
 

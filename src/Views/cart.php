@@ -179,8 +179,41 @@ $totalPrice = $cartData['total_price'] ?? 0;
             <tbody>
             <?php foreach ($cartItems as $item): ?>
                 <?php
-                $product = $item['product'];
-                $subtotal = $item['total_price'];
+                // Инициализируем переменные значениями по умолчанию
+                $product = null;
+                $amount = 1;
+                $subtotal = 0;
+
+                // Пытаемся извлечь данные из разных форматов
+                if (is_object($item)) {
+                    if (isset($item->product) && is_object($item->product)) {
+                        // Объект со свойством product
+                        $product = $item->product;
+                        $amount = $item->amount ?? 1;
+                    } elseif (method_exists($item, 'getName')) {
+                        // Прямой объект Product
+                        $product = $item;
+                    }
+                } elseif (is_array($item)) {
+                    if (isset($item['product']) && is_object($item['product'])) {
+                        // Массив с ключом 'product'
+                        $product = $item['product'];
+                        $amount = $item['amount'] ?? 1;
+                    } elseif (isset($item['name'])) {
+                        // Массив с данными товара
+                        $product = (object)$item; // Преобразуем в объект
+                    }
+                }
+
+                // Если не удалось получить продукт, пропускаем итерацию
+                if (!$product || !method_exists($product, 'getName')) {
+                    continue;
+                }
+
+                // Вычисляем subtotal если не задан
+                if (!isset($subtotal) || $subtotal == 0) {
+                    $subtotal = $product->getPrice() * $amount;
+                }
                 ?>
                 <tr>
                     <td>
@@ -193,7 +226,7 @@ $totalPrice = $cartData['total_price'] ?? 0;
                                 <input type="hidden" name="product_id" value="<?= $product->getId() ?>">
                                 <button type="submit" class="btn btn-red quantity-btn">−</button>
                             </form>
-                            <span style="font-weight: bold;"><?= $item['amount'] ?></span>
+                            <span style="font-weight: bold;"><?= $amount ?></span>
                             <form action="/cart/increase" method="POST" class="quantity-form">
                                 <input type="hidden" name="product_id" value="<?= $product->getId() ?>">
                                 <button type="submit" class="btn btn-green quantity-btn">+</button>

@@ -5,32 +5,29 @@ class App
 {
     private array $routes = [];
 
-    public function get(string $route, string $className, string $method): void
+    public function get(string $route, array $handler): void
     {
-        $this->addRoute($route, 'GET', $className, $method);
+        $this->addRoute($route, 'GET', $handler);
     }
 
-    public function post(string $route, string $className, string $method): void
+    public function post(string $route, array $handler): void
     {
-        $this->addRoute($route, 'POST', $className, $method);
+        $this->addRoute($route, 'POST', $handler);
     }
 
-    public function put(string $route, string $className, string $method): void
+    public function put(string $route, array $handler): void
     {
-        $this->addRoute($route, 'PUT', $className, $method);
+        $this->addRoute($route, 'PUT', $handler);
     }
 
-    public function delete(string $route, string $className, string $method): void
+    public function delete(string $route, array $handler): void
     {
-        $this->addRoute($route, 'DELETE', $className, $method);
+        $this->addRoute($route, 'DELETE', $handler);
     }
 
-    private function addRoute(string $route, string $routeMethod, string $className, string $method): void
+    private function addRoute(string $route, string $routeMethod, array $handler): void
     {
-        $this->routes[$route][$routeMethod] = [
-            'class' => $className,
-            'method' => $method,
-        ];
+        $this->routes[$route][$routeMethod] = $handler;
     }
 
     public function run(): void
@@ -38,9 +35,15 @@ class App
         $requestUri = $_SERVER['REQUEST_URI'];
         $requestMethod = $_SERVER['REQUEST_METHOD'];
 
+        // Убираем GET-параметры из URI
+        if (($pos = strpos($requestUri, '?')) !== false) {
+            $requestUri = substr($requestUri, 0, $pos);
+        }
+
         if (!isset($this->routes[$requestUri])) {
             http_response_code(404);
-            require_once __DIR__ . '/../../public/404.php';
+
+            require_once __DIR__ . '/../public/404.php';
             return;
         }
 
@@ -53,17 +56,16 @@ class App
         }
 
         $handler = $routeMethods[$requestMethod];
-        $class = $handler['class'];
-        $method = $handler['method'];
 
-        if (strpos($class, '\\') === false) {
+        $class = $handler[0];
+        $method = $handler[1];
+
+        // Добавляем namespace если нужно
+        if (is_string($class) && strpos($class, '\\') === false) {
             $class = '\\Controllers\\' . $class;
         }
 
         $controller = new $class();
-
-        if ($method !== '__construct') {
-            $controller->$method();
-        }
+        $controller->$method();
     }
 }

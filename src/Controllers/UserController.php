@@ -36,18 +36,47 @@ class UserController extends BaseController
             $this->auth->redirect('/catalog');
         }
 
-        $errors = $this->validate($_POST);
+        $errors = [];
+
+        // Получаем данные из формы с правильными именами
+        $name = $this->auth->getPostString('name');
+        $email = $this->auth->getPostString('email');
+        $password = $this->auth->getPostParam('password');
+        $passwordRepeat = $this->auth->getPostParam('passwordRepeat');
+
+        // Валидация
+        if (empty($name)) {
+            $errors['name'] = 'Введите имя';
+        } elseif (strlen($name) < 2) {
+            $errors['name'] = 'Имя должно быть не меньше 2 символов';
+        }
+
+        if (empty($email)) {
+            $errors['email'] = 'Введите email';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Неверный формат email';
+        }
+
+        if (empty($password)) {
+            $errors['password'] = 'Введите пароль';
+        } elseif (strlen($password) < 6) {
+            $errors['password'] = 'Пароль должен быть минимум 6 символов';
+        }
+
+        if (empty($passwordRepeat)) {
+            $errors['passwordRepeat'] = 'Подтвердите пароль';
+        } elseif ($password !== $passwordRepeat) {
+            $errors['passwordRepeat'] = 'Пароли не совпадают';
+        }
 
         if (empty($errors)) {
-            $name = $this->auth->getPostString('name');
-            $email = $this->auth->getPostString('email');
-            $password = $this->auth->getPostParam('password');
-
+            // Проверяем, существует ли пользователь
             $existingUser = User::findByEmail($email);
 
             if ($existingUser) {
                 $errors['email'] = 'Пользователь с таким email уже существует';
             } else {
+                // Хешируем пароль и создаем пользователя
                 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
                 $user = new User($name, $email, $passwordHash);
 
@@ -60,6 +89,7 @@ class UserController extends BaseController
             }
         }
 
+        // Если есть ошибки, показываем форму снова
         require_once __DIR__ . '/../Views/registration.php';
     }
 
@@ -182,56 +212,5 @@ class UserController extends BaseController
 
         $userData = $user->toArray();
         require_once __DIR__ . '/../Views/edit_profile.php';
-    }
-
-    private function validate(array $data): array
-    {
-        $errors = [];
-
-        if (isset($data['name'])) {
-            $name = htmlspecialchars(trim($data["name"]));
-            if (empty($name)) {
-                $errors['name'] = 'Введите имя';
-            } elseif (strlen($name) < 2) {
-                $errors['name'] = 'Имя должно быть не меньше 2 символов';
-            }
-        } else {
-            $errors['name'] = 'Заполните поле Name';
-        }
-
-        if (isset($data['email'])) {
-            $email = htmlspecialchars(trim($data["email"]));
-            if (empty($email)) {
-                $errors['email'] = 'Введите Email';
-            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $errors['email'] = 'Неверный формат Email';
-            }
-        } else {
-            $errors['email'] = 'Введите Email';
-        }
-
-        if (isset($data['password'])) {
-            $password = $data["password"];
-            if (empty($password)) {
-                $errors['password'] = 'Пароль должен быть заполнен';
-            } elseif (strlen($password) < 6) {
-                $errors['password'] = 'Пароль должен быть минимум из 6 символов';
-            }
-        } else {
-            $errors['password'] = 'Пароль должен быть заполнен';
-        }
-
-        if (isset($data['passwordRepeat'])) {
-            $passwordRepeat = $data['passwordRepeat'];
-            if (empty($passwordRepeat)) {
-                $errors['password_confirm'] = 'Подтвердите пароль';
-            } elseif (isset($password) && $password !== $passwordRepeat) {
-                $errors['passwordRepeat'] = 'Пароли не совпадают';
-            }
-        } else {
-            $errors['passwordRepeat'] = 'Подтвердите пароль';
-        }
-
-        return $errors;
     }
 }

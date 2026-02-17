@@ -18,7 +18,6 @@ class CatalogController extends BaseController
     {
         $products = Product::getAll();
 
-        $cart = null;
         $cartItems = [];
         $cartTotalPrice = 0.0;
         $cartItemsCount = 0;
@@ -37,5 +36,4 @@ class CatalogController extends BaseController
         $this->auth->unsetSessionValue('error_message');
 
         require_once __DIR__ . '/../Views/catalog.php';
-    }
-}
+    }}

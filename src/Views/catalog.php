@@ -214,14 +214,19 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        .product-header {
-            background-color: #f8f9fa;
-            padding: 10px;
-            font-size: 12px;
-            color: #e67e22;
-            font-weight: bold;
+        .product-image-container {
             text-align: center;
-            border-bottom: 1px solid #dee2e6;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #eee;
+        }
+
+        .product-image {
+            max-width: 180px;
+            max-height: 180px;
+            min-height: 180px;
+            object-fit: contain;
+            border-radius: 8px;
         }
 
         .product-body {
@@ -254,16 +259,11 @@
             font-size: 20px;
             font-weight: bold;
             color: #27ae60;
-        }
-
-        .product-stock {
-            font-size: 13px;
-            color: #e67e22;
-            margin-top: 5px;
+            margin-bottom: 10px;
         }
 
         .product-actions {
-            margin-top: 15px;
+            margin-top: 10px;
             display: flex;
             justify-content: center;
         }
@@ -390,9 +390,16 @@
     <div class="products-grid">
         <?php foreach ($products as $product): ?>
             <div class="product-card">
-                <div class="product-header">
-                    🔥 Хит продаж!
+                <!-- БЛОК С КАРТИНКОЙ -->
+                <div class="product-image-container">
+                    <a href="/product?id=<?= $product->getId() ?>">
+                        <img src="<?= htmlspecialchars($product->getImageUrl()) ?>"
+                             alt="<?= htmlspecialchars($product->getName()) ?>"
+                             class="product-image"
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/180x180?text=<?= urlencode($product->getName()) ?>';">
+                    </a>
                 </div>
+
                 <a href="/product?id=<?= $product->getId() ?>" class="product-link">
                     <div class="product-body">
                         <div class="product-name"><?= htmlspecialchars($product->getName()) ?></div>
@@ -406,7 +413,6 @@
                 </a>
                 <div class="product-footer">
                     <div class="product-price"><?= number_format($product->getPrice(), 2, '.', ' ') ?> ₽</div>
-                    <div class="product-stock">В наличии: <?= $product->getStock() ?> шт.</div>
 
                     <?php if (isset($_SESSION['userId'])): ?>
                         <?php

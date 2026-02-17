@@ -5,26 +5,23 @@ class Autoloader
 {
     public static function register(): void
     {
-        spl_autoload_register(function (string $className) {
-            $prefixes = [
-                'Controllers\\' => __DIR__ . '/../Controllers/',
-                'Core\\' => __DIR__ . '/',
-                'Models\\' => __DIR__ . '/../Models/',
-            ];
+        spl_autoload_register([__CLASS__, 'autoload']);
+    }
 
-            foreach ($prefixes as $prefix => $baseDir) {
-                if (strpos($className, $prefix) === 0) {
-                    $relativeClass = substr($className, strlen($prefix));
-                    $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
+    public static function autoload(string $class): void
+    {
+        // Убираем ведущий слэш
+        $class = ltrim($class, '\\');
 
-                    if (file_exists($file)) {
-                        require_once $file;
-                        return true;
-                    }
-                }
-            }
+        // Заменяем обратные слэши на разделители
+        $file = __DIR__ . '/../' . str_replace('\\', '/', $class) . '.php';
 
-            return false;
-        });
+        // Делаем путь
+        $file = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $file);
+
+        // Проверяем существование файла
+        if (file_exists($file)) {
+            require_once $file;
+        }
     }
 }

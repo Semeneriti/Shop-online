@@ -135,5 +135,43 @@
         </div>
     <?php endif; ?>
 
-    <form action="/update-profile" method="POST">
-        <div class
+    <?php if (!empty($errors)): ?>
+        <div style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 20px;">
+            <?php foreach ($errors as $error): ?>
+                <p><?= htmlspecialchars(is_array($error) ? implode(', ', $error) : $error) ?></p>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
+    <form action="/edit-profile" method="POST">
+        <div class="form-group">
+            <label for="name">Имя</label>
+            <input type="text" id="name" name="name" class="form-control"
+                   value="<?= htmlspecialchars($userData['name'] ?? '') ?>" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" class="form-control"
+                   value="<?= htmlspecialchars($userData['email'] ?? '') ?>" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Новый пароль (оставьте пустым, если не хотите менять)</label>
+            <input type="password" id="password" name="password" class="form-control">
+            <div class="info-text">Минимум 6 символов</div>
+        </div>
+
+        <div class="form-group">
+            <label for="password_confirm">Подтверждение нового пароля</label>
+            <input type="password" id="password_confirm" name="password_confirm" class="form-control">
+        </div>
+
+        <button type="submit" class="btn">Сохранить изменения</button>
+        <a href="/profile" class="btn btn-secondary">Отмена</a>
+    </form>
+
+    <a href="/profile" class="back-link">← Вернуться в профиль</a>
+</div>
+</body>
+</html>
