@@ -3,6 +3,7 @@ namespace Services;
 
 use Models\Order;
 use Models\Cart;
+use DTO\OrderCreateDto;
 
 class OrderService
 {
@@ -16,11 +17,16 @@ class OrderService
 
         $checkoutData = $cart->checkout();
 
-        $checkoutData['address'] = $orderData['address'];
-        $checkoutData['phone'] = $orderData['phone'];
-        $checkoutData['comment'] = $orderData['comment'] ?? null;
+        $dto = new OrderCreateDto(
+            $userId,
+            $orderData['address'],
+            $orderData['phone'],
+            $checkoutData['items'],
+            $checkoutData['total_price'],
+            $orderData['comment'] ?? null
+        );
 
-        return Order::createFromCart($checkoutData);
+        return Order::createFromCart($dto);
     }
 
     public function getOrderById(int $orderId): ?Order

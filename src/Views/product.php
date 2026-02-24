@@ -359,6 +359,7 @@
     </div>
 
     <div class="reviews-section">
+        <!-- ========== БЛОК С ОТЗЫВАМИ ========== -->
         <h3 class="reviews-title">📝 Отзывы покупателей</h3>
 
         <?php if (isset($auth) && !$auth->isGuest()): ?>

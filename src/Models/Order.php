@@ -1,6 +1,8 @@
 <?php
 namespace Models;
 
+use DTO\OrderCreateDto;
+
 class Order extends Model
 {
     private ?int $id;
@@ -138,7 +140,7 @@ class Order extends Model
         return $orders;
     }
 
-    public static function createFromCart(array $cartData): ?Order
+    public static function createFromCart(OrderCreateDto $dto): ?Order
     {
         $pdo = self::getConnection();
 
@@ -153,11 +155,11 @@ class Order extends Model
 
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
-                ':user_id' => $cartData['user_id'],
-                ':address' => $cartData['address'],
-                ':phone' => $cartData['phone'],
-                ':comment' => $cartData['comment'],
-                ':total_price' => $cartData['total_price'],
+                ':user_id' => $dto->getUserId(),
+                ':address' => $dto->getAddress(),
+                ':phone' => $dto->getPhone(),
+                ':comment' => $dto->getComment(),
+                ':total_price' => $dto->getTotalPrice(),
                 ':status' => 'новый'
             ]);
 
@@ -165,7 +167,7 @@ class Order extends Model
             $orderId = $result['id'];
 
             // Добавляем товары из корзины
-            foreach ($cartData['items'] as $item) {
+            foreach ($dto->getItems() as $item) {
                 $sql = 'INSERT INTO order_products (order_id, product_id, amount, price) 
                         VALUES (:order_id, :product_id, :amount, :price)';
 

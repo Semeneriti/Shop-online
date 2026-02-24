@@ -6,7 +6,7 @@ require_once __DIR__ . '/../Core/Autoloader.php';
 
 $app = new \Core\App();
 
-// Используем единый стиль - через массивы
+
 $app->get('/registration', [\Controllers\UserController::class, 'getRegistrate']);
 $app->post('/registration', [\Controllers\UserController::class, 'registrate']);
 $app->get('/login', [\Controllers\UserController::class, 'login']);

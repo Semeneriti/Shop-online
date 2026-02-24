@@ -25,6 +25,7 @@ class CartController extends BaseController
         require_once __DIR__ . '/../Views/cart.php';
     }
 
+    // Оформление заказа
     public function showCheckout(): void
     {
         $this->auth->requireAuth();

@@ -1,4 +1,5 @@
 <?php
+
 namespace Models;
 
 class Product extends Model
@@ -86,22 +87,26 @@ class Product extends Model
     }
 
     public function getReviews(): array
+        // Вызываем статический метод модели Review и передаем ID текущего товара
     {
         return Review::findByProductId($this->id);
     }
 
     public function getAverageRating(): float
+    //Считает среднюю оценку товара на основе всех отзывов
     {
+        // Получаем все отзывы
         $reviews = $this->getReviews();
+        // Если отзывов нет, возвращаем 0
         if (empty($reviews)) {
             return 0;
         }
-
+// Суммируем все оценки
         $sum = 0;
         foreach ($reviews as $review) {
             $sum += $review->getRating();
         }
-
+        // Делим сумму на количество отзывов и округляем до 1 знака
         return round($sum / count($reviews), 1);
     }
 
@@ -135,7 +140,7 @@ class Product extends Model
         return self::fromArray($data);
     }
 
-    // Преобразование из массива - ЭТО САМОЕ ВАЖНОЕ!
+    // Преобразование из массива
     public static function fromArray(array $data): Product
     {
         return new self(
