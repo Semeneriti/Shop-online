@@ -1,15 +1,17 @@
 <?php
 namespace Controllers;
 
-use Models\User;
-use Services\AuthService;
+use Services\AuthInterface;      // Импортируем интерфейс авторизации (контракт, который определяет, какие методы должны быть у сервиса авторизации)
+use Services\SessionAuthService;  // Импортируем конкретную реализацию сервиса авторизации на сессиях
 
-abstract class BaseController
+abstract class BaseController     // Абстрактный класс - нельзя создать объект этого класса, только наследоваться
 {
-    protected AuthService $auth;
+    protected AuthInterface $auth;  // Свойство для хранения сервиса авторизации (защищенное - доступно в этом классе и классах-наследниках)
 
-    public function __construct()
+    public function __construct()   // Конструктор - вызывается автоматически при создании объекта
     {
-        $this->auth = new AuthService();
+        // Создаем объект сервиса авторизации на сессиях и сохраняем его в свойство auth
+        // Благодаря интерфейсу AuthInterface мы знаем, что у этого объекта есть все нужные методы
+        $this->auth = new SessionAuthService();
     }
 }

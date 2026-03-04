@@ -1,6 +1,7 @@
 <?php
-namespace Models;
+namespace Models; // Модель - класс для работы с данными в базе данных
 
+// Класс Review - модель отзыва, наследуется от Model
 class Review extends Model
 {
     // СВОЙСТВА КЛАССА - что хранит каждый отзыв
@@ -12,16 +13,26 @@ class Review extends Model
     private string $text;        // Текст отзыва (что написал пользователь)
     private string $createdAt;   // Дата и время создания отзыва
 
+    /**
+     * Конструктор - создает объект отзыва
+     * @param int $productId - ID товара
+     * @param int $userId - ID пользователя
+     * @param string $userName - Имя пользователя
+     * @param int $rating - Оценка (1-5)
+     * @param string $text - Текст отзыва
+     * @param int|null $id - ID отзыва (для существующих)
+     * @param string|null $createdAt - Дата создания (для существующих)
+     */
     public function __construct(
-        int $productId,          // Обязательно: ID товара
-        int $userId,             // Обязательно: ID пользователя
-        string $userName,        // Обязательно: Имя пользователя
-        int $rating,             // Обязательно: Оценка
-        string $text,            // Обязательно: Текст
-        ?int $id = null,         // Необязательно: ID отзыва (для уже существующих)
-        ?string $createdAt = null // Необязательно: Дата создания
+        int $productId,
+        int $userId,
+        string $userName,
+        int $rating,
+        string $text,
+        ?int $id = null,
+        ?string $createdAt = null
     ) {
-        parent::__construct();   // Вызываем конструктор родительского класса Model
+        parent::__construct(); // Вызываем конструктор родительского класса Model (подключаем БД)
 
         // Заполняем свойства переданными значениями
         $this->id = $id;
@@ -33,12 +44,19 @@ class Review extends Model
         // Если дата не передана, ставим текущую
         $this->createdAt = $createdAt ?: date('Y-m-d H:i:s');
     }
-//Возвращает название таблицы в базе данных для отзывов
+
+    /**
+     * Возвращает имя таблицы в базе данных для отзывов
+     * @return string
+     */
     protected static function getTableName(): string
     {
-        return 'reviews';// Таблица называется "reviews"
+        return 'reviews'; // Таблица называется "reviews"
     }
-//Методы для получения значений свойств,чтобы нельзя было менять свойства напрямую
+
+    // ============ ГЕТТЕРЫ ============
+    // Методы для получения значений свойств, чтобы нельзя было менять свойства напрямую
+
     public function getId(): ?int
     {
         return $this->id;
@@ -73,12 +91,20 @@ class Review extends Model
     {
         return $this->createdAt;
     }
-//Находит все отзывы для конкретного товара
+
+    // ============ СТАТИЧЕСКИЕ МЕТОДЫ ============
+
+    /**
+     * Находит все отзывы для конкретного товара
+     * @param int $productId - ID товара
+     * @return array - массив объектов Review
+     */
     public static function findByProductId(int $productId): array
     {
         // Получаем соединение с базой данных
         $pdo = self::getConnection();
         $tableName = self::getTableName();
+
         // Готовим SQL запрос: выбираем все отзывы для товара, сортируем от новых к старым
         $stmt = $pdo->prepare("SELECT * FROM {$tableName} WHERE product_id = :product_id ORDER BY created_at DESC");
         $stmt->execute(['product_id' => $productId]);
@@ -91,16 +117,25 @@ class Review extends Model
 
         return $reviews;
     }
-// Сохраняет отзыв в базу данных
+
+    // ============ МЕТОДЫ ДЛЯ РАБОТЫ С БД ============
+
+    /**
+     * Сохраняет отзыв в базу данных
+     * @return bool - успешно или нет
+     */
     public function save(): bool
     {
         $tableName = self::getTableName();
-        //запрос на вставку нового отзыва
+
+        // SQL запрос на вставку нового отзыва
+        // RETURNING id - просим базу вернуть ID созданной записи
         $sql = "INSERT INTO {$tableName} (product_id, user_id, user_name, rating, text, created_at) 
                 VALUES (:product_id, :user_id, :user_name, :rating, :text, :created_at)
-                RETURNING id";//просим базу вернуть ID созданной записи
+                RETURNING id";
 
         $stmt = $this->pdo->prepare($sql);
+
         // Выполняем запрос с данными из объекта
         $result = $stmt->execute([
             ':product_id' => $this->productId,
@@ -110,6 +145,7 @@ class Review extends Model
             ':text' => $this->text,
             ':created_at' => $this->createdAt
         ]);
+
         // Если запрос успешен, получаем ID новой записи и сохраняем в объект
         if ($result) {
             $data = $stmt->fetch();
@@ -118,7 +154,14 @@ class Review extends Model
 
         return $result;
     }
-//Создает объект Review из массива данных
+
+    // ============ ПРЕОБРАЗОВАНИЕ ДАННЫХ ============
+
+    /**
+     * Создает объект Review из массива данных (из результата запроса)
+     * @param array $data
+     * @return Review
+     */
     public static function fromArray(array $data): Review
     {
         return new self(
@@ -131,7 +174,11 @@ class Review extends Model
             $data['created_at'] ?? null
         );
     }
-//Преобразует объект отзыва в массив
+
+    /**
+     * Преобразует объект отзыва в массив (для передачи в шаблон)
+     * @return array
+     */
     public function toArray(): array
     {
         return [
