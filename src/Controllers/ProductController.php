@@ -2,10 +2,17 @@
 namespace Controllers;
 
 // Импортируем необходимые классы
-use Models\Product;              // Модель товара - для работы с товарами
-use Models\Review;               // Модель отзыва - для создания отзывов
-use Services\CartService;        // Сервис корзины - для добавления товаров в корзину
-use Request\AddProductRequest;   // Класс-запрос для добавления товара в корзину
+use DTO\AddToCartDto;
+use Models\Product;
+use Models\Review;
+use Request\AddProductRequest;
+use Services\Auth\CartService;
+
+// Модель товара - для работы с товарами
+// Модель отзыва - для создания отзывов
+// Сервис корзины - для добавления товаров в корзину
+// Класс-запрос для добавления товара в корзину
+// DTO для добавления товара в корзину
 
 // Контроллер товаров - наследуется от BaseController
 class ProductController extends BaseController
@@ -76,8 +83,15 @@ class ProductController extends BaseController
 
         // Пытаемся добавить товар в корзину
         try {
-            // Вызываем метод сервиса корзины для добавления товара
-            if ($this->cartService->addItem($this->auth->getUserId(), $productId, $amount)) {
+            // Создаем DTO объект с данными для добавления в корзину
+            $dto = new AddToCartDto(
+                $this->auth->getUserId(),
+                $productId,
+                $amount
+            );
+
+            // Вызываем метод сервиса корзины для добавления товара, передавая DTO
+            if ($this->cartService->addItem($dto)) {
                 // Если успешно - показываем сообщение об успехе и редиректим в каталог
                 $this->auth->setSessionValue('success_message', "Товар успешно добавлен в корзину!");
                 $this->auth->redirect("/catalog");

@@ -2,9 +2,13 @@
 namespace Controllers;
 
 // Импортируем необходимые классы
-use Services\CartService;      // Сервис для работы с корзиной
-use Services\OrderService;     // Сервис для работы с заказами
-use Request\UpdateCartRequest;  // Класс-запрос для обновления корзины (содержит данные из формы)
+use Request\UpdateCartRequest;
+use Services\Auth\CartService;
+use Services\OrderService;
+
+// Сервис для работы с корзиной
+// Сервис для работы с заказами
+// Класс-запрос для обновления корзины (содержит данные из формы)
 
 // Класс контроллера корзины - наследуется от BaseController
 class CartController extends BaseController
@@ -108,12 +112,28 @@ class CartController extends BaseController
 
         // Пытаемся создать заказ
         try {
-            // Создаем заказ из корзины текущего пользователя
-            $order = $this->orderService->createOrderFromCart($this->auth->getUserId(), $orderData);
+            // Получаем ID пользователя
+            $userId = $this->auth->getUserId();
 
-            // Если заказ не создался - выбрасываем исключение
-            if (!$order) {
-                throw new \RuntimeException("Ошибка при создании заказа");
+            // Получаем общую сумму корзины
+            $cartTotal = $this->cartService->getCartTotalPrice($userId);
+
+            // Проверяем, что сумма заказа больше 100 рублей
+            if ($cartTotal <= 100) {
+                // Если сумма меньше или равна 100 - показываем ошибку
+                $this->auth->setSessionValue('error_message', "Сумма заказа должна быть более 100 рублей. Сейчас: " . $cartTotal . " руб.");
+                $this->auth->redirect("/checkout");
+                return;
+            }
+
+            // Создаем заказ из корзины текущего пользователя
+            $order = $this->orderService->createOrderFromCart($userId, $orderData);
+
+            // Если заказ не создался - показываем ошибку
+            if ($order == null) {
+                $this->auth->setSessionValue('error_message', "Ошибка при создании заказа");
+                $this->auth->redirect("/checkout");
+                return;
             }
 
             // Очищаем данные оформления из сессии
@@ -124,20 +144,14 @@ class CartController extends BaseController
             $orderDetails = $order->getDetails();
             require_once __DIR__ . '/../Views/order_success.php';
 
-        } catch (\InvalidArgumentException $e) {
-            // Ошибка: неверные аргументы (например, товара нет в наличии)
-            $this->auth->setSessionValue('error_message', $e->getMessage());
-            $this->auth->redirect("/cart");
-        } catch (\RuntimeException $e) {
-            // Ошибка выполнения (например, корзина пуста)
-            $this->auth->setSessionValue('error_message', $e->getMessage());
-            $this->auth->redirect("/checkout");
         } catch (\Exception $e) {
-            // Любая другая ошибка
-            $this->auth->setSessionValue('error_message', "Произошла ошибка при оформлении заказа: " . $e->getMessage());
+            // Ловим ошибки
+            $errorText = "Ошибка при оформлении заказа: " . $e->getMessage();
+            $this->auth->setSessionValue('error_message', $errorText);
             $this->auth->redirect("/checkout");
-        }
-    }
+
+             }}
+
 
     /**
      * Увеличение количества товара в корзине

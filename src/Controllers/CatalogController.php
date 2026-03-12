@@ -2,8 +2,11 @@
 namespace Controllers;
 
 // Импортируем необходимые классы
-use Models\Product;          // Модель товара - для получения списка товаров
-use Services\CartService;    // Сервис корзины - для получения информации о корзине пользователя
+use Models\Product;
+use Services\Auth\CartService;
+
+// Модель товара - для получения списка товаров
+// Сервис корзины - для получения информации о корзине пользователя
 
 // Контроллер каталога товаров - наследуется от BaseController
 class CatalogController extends BaseController

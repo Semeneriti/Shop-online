@@ -132,7 +132,7 @@ class App
                 $className = $paramType->getName();
 
                 // Если в имени класса есть 'Request' - это наш класс-запрос
-                if (strpos($className, 'Request') !== false) {
+                if (str_contains($className, 'Request')) {
                     // Создаем объект запроса, передавая в конструктор данные
                     // Для GET-запросов передаем $_GET, для POST - $_POST
                     if ($requestMethod === 'GET') {

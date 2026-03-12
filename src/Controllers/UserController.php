@@ -2,12 +2,19 @@
 namespace Controllers;
 
 // Импортируем необходимые классы
-use Models\User;                       // Модель пользователя - для работы с пользователями
-use Services\CartService;               // Сервис корзины - для получения информации о корзине
-use Services\OrderService;              // Сервис заказов - для получения истории заказов
-use Request\RegisterRequest;            // Класс-запрос для регистрации
-use Request\LoginRequest;               // Класс-запрос для входа
-use Request\UpdateProfileRequest;       // Класс-запрос для обновления профиля
+use Models\User;
+use Request\LoginRequest;
+use Request\RegistrateRequest;
+use Request\UpdateProfileRequest;
+use Services\Auth\CartService;
+use Services\OrderService;
+
+// Модель пользователя - для работы с пользователями
+// Сервис корзины - для получения информации о корзине
+// Сервис заказов - для получения истории заказов
+// Класс-запрос для регистрации
+// Класс-запрос для входа
+// Класс-запрос для обновления профиля
 
 // Контроллер пользователя - наследуется от BaseController
 class UserController extends BaseController
@@ -48,7 +55,7 @@ class UserController extends BaseController
      * Обработка регистрации нового пользователя
      * POST /registration
      */
-    public function registrate(RegisterRequest $request): void
+    public function registrate(RegistrateRequest $request): void
     {
         // Проверяем, что запрос отправлен методом POST
         if (!$this->auth->isPostRequest()) {

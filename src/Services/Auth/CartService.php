@@ -1,11 +1,15 @@
 <?php
-namespace Services; // Пространство имен для сервисов
+namespace Services\Auth; // Пространство имен для сервисов
 
 // Импортируем необходимые классы
-use Models\Cart;           // Модель корзины
-use Models\Product;        // Модель товара
-use DTO\CartItemDto;       // DTO для обновления товара в корзине
-use DTO\AddToCartDto;      // DTO для добавления товара в корзину
+use DTO\AddToCartDto;
+use DTO\CartItemDto;
+use Models\Cart;
+
+// Модель корзины
+// Модель товара
+// DTO для обновления товара в корзине
+// DTO для добавления товара в корзину
 
 // Класс CartService - сервис для работы с корзиной
 // Содержит методы для всех операций с корзиной
