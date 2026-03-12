@@ -220,7 +220,7 @@
                         <td><?= isset($order['created_at']) ? date('d.m.Y H:i', strtotime($order['created_at'])) : '' ?></td>
                         <td><?= htmlspecialchars($order['address'] ?? '') ?></td>
                         <td><?= htmlspecialchars($order['phone'] ?? '') ?></td>
-                        <td><?= $order['items_count'] ?? 0 ?> шт.</td>
+                        <td><?= $order['items_count'] ?? 0 ?> шт. (всего <?= $order['total_items'] ?? 0 ?> шт.)</td>
                         <td><strong><?= number_format($order['total_price'] ?? 0, 2, '.', ' ') ?> ₽</strong></td>
                         <td><span style="color: #27ae60;"><?= $order['status'] ?? 'новый' ?></span></td>
                     </tr>

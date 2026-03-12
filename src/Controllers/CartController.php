@@ -1,210 +1,437 @@
 <?php
 namespace Controllers;
 
-// Импортируем необходимые классы
-use Services\CartService;      // Сервис для работы с корзиной
-use Services\OrderService;     // Сервис для работы с заказами
-use Request\UpdateCartRequest;  // Класс-запрос для обновления корзины (содержит данные из формы)
+use Request\UpdateCartRequest;
+use Services\CartService;
+use Services\OrderService;
 
-// Класс контроллера корзины - наследуется от BaseController
 class CartController extends BaseController
 {
-    // Свойства класса - сервисы, с которыми будет работать контроллер
-    private CartService $cartService;    // Для операций с корзиной
-    private OrderService $orderService;  // Для операций с заказами
+    private CartService $cartService;
+    private OrderService $orderService;
 
-    // Конструктор - вызывается при создании объекта контроллера
     public function __construct()
     {
-        parent::__construct();  // Вызываем конструктор родительского класса (там создается $this->auth)
-
-        // Создаем объекты сервисов и сохраняем в свойства
+        parent::__construct();
         $this->cartService = new CartService();
         $this->orderService = new OrderService();
     }
 
-    /**
-     * Отображение корзины
-     * GET /cart
-     */
     public function showCart(): void
     {
-        // Проверяем, авторизован ли пользователь
         $this->auth->requireAuth();
-
-        // Получаем данные корзины для текущего пользователя
         $cartData = $this->cartService->getCartData($this->auth->getUserId());
 
-        // Подключаем шаблон (вид) корзины
+        $successMessage = $this->auth->getSessionValue('success_message');
+        $errorMessage = $this->auth->getSessionValue('error_message');
+
+        $this->auth->unsetSessionValue('success_message');
+        $this->auth->unsetSessionValue('error_message');
+
         require_once __DIR__ . '/../Views/cart.php';
     }
 
-    /**
-     * Отображение страницы оформления заказа
-     * GET /checkout
-     */
     public function showCheckout(): void
     {
-        // Проверяем авторизацию
         $this->auth->requireAuth();
 
-        // Если корзина пуста - редирект на страницу корзины
         if ($this->cartService->isCartEmpty($this->auth->getUserId())) {
             $this->auth->redirect("/cart");
         }
 
-        // Получаем данные корзины для отображения в форме
         $cartData = $this->cartService->getCartData($this->auth->getUserId());
-
-        // Получаем сохраненные в сессии ошибки и данные формы (если были ошибки при предыдущей отправке)
         $errors = $this->auth->getSessionValue('checkout_errors', []);
         $formData = $this->auth->getSessionValue('checkout_data', []);
 
-        // Удаляем эти данные из сессии, чтобы они не висели там вечно
         $this->auth->unsetSessionValue('checkout_errors');
         $this->auth->unsetSessionValue('checkout_data');
 
-        // Подключаем шаблон оформления заказа
         require_once __DIR__ . '/../Views/checkout.php';
     }
 
-    /**
-     * Обработка отправки формы оформления заказа
-     * POST /checkout
-     */
     public function processCheckout(): void
     {
-        // Если запрос не POST - редирект на страницу оформления
         if (!$this->auth->isPostRequest()) {
             $this->auth->redirect("/checkout");
         }
 
-        // Проверяем авторизацию
         $this->auth->requireAuth();
 
-        // Получаем данные из POST-запроса (поля формы)
         $address = $this->auth->getPostString('address');
         $phone = $this->auth->getPostString('phone');
         $comment = $this->auth->getPostString('comment');
 
-        // Формируем массив с данными заказа
         $orderData = [
             'address' => $address,
             'phone' => $phone,
             'comment' => $comment
         ];
 
-        // Валидируем данные (проверяем, что все поля заполнены правильно)
         $errors = $this->orderService->validateOrderData($orderData);
 
-        // Если есть ошибки валидации
         if (!empty($errors)) {
-            // Сохраняем ошибки и введенные данные в сессию
             $this->auth->setSessionValue('checkout_errors', $errors);
             $this->auth->setSessionValue('checkout_data', $orderData);
-            // Возвращаем пользователя обратно на страницу оформления
             $this->auth->redirect("/checkout");
         }
 
-        // Пытаемся создать заказ
-        try {
-            // Создаем заказ из корзины текущего пользователя
-            $order = $this->orderService->createOrderFromCart($this->auth->getUserId(), $orderData);
+        $userId = $this->auth->getUserId();
+        $cartTotal = $this->cartService->getCartTotalPrice($userId);
 
-            // Если заказ не создался - выбрасываем исключение
-            if (!$order) {
-                throw new \RuntimeException("Ошибка при создании заказа");
+        if ($cartTotal <= 100) {
+            $errors['total'] = "Сумма заказа должна быть более 100 рублей. Сейчас: " . $cartTotal . " руб.";
+            $this->auth->setSessionValue('checkout_errors', $errors);
+            $this->auth->setSessionValue('checkout_data', $orderData);
+            $this->auth->redirect("/checkout");
+            return;
+        }
+
+        try {
+            $order = $this->orderService->createOrderFromCart($userId, $orderData);
+
+            if ($order == null) {
+                throw new \Exception("Ошибка при создании заказа");
             }
 
-            // Очищаем данные оформления из сессии
             $this->auth->unsetSessionValue('checkout_errors');
             $this->auth->unsetSessionValue('checkout_data');
 
-            // Получаем детали заказа и показываем страницу успеха
             $orderDetails = $order->getDetails();
+            $address = $order->getAddress();
+            $phone = $order->getPhone();
+            $comment = $order->getComment();
+
             require_once __DIR__ . '/../Views/order_success.php';
-
-        } catch (\InvalidArgumentException $e) {
-            // Ошибка: неверные аргументы (например, товара нет в наличии)
-            $this->auth->setSessionValue('error_message', $e->getMessage());
-            $this->auth->redirect("/cart");
-        } catch (\RuntimeException $e) {
-            // Ошибка выполнения (например, корзина пуста)
-            $this->auth->setSessionValue('error_message', $e->getMessage());
-            $this->auth->redirect("/checkout");
         } catch (\Exception $e) {
-            // Любая другая ошибка
-            $this->auth->setSessionValue('error_message', "Произошла ошибка при оформлении заказа: " . $e->getMessage());
+            $this->logger->error($e->getMessage(), [
+                'user_id' => $userId,
+                'cart_total' => $cartTotal,
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            $errors['general'] = $e->getMessage();
+            $this->auth->setSessionValue('checkout_errors', $errors);
             $this->auth->redirect("/checkout");
         }
     }
 
-    /**
-     * Увеличение количества товара в корзине
-     * POST /cart/increase
-     */
-    public function increaseProduct(UpdateCartRequest $request): void
+    public function clearCart(): void
     {
-        // Проверяем метод запроса
         if (!$this->auth->isPostRequest()) {
             $this->auth->redirect("/cart");
         }
 
-        // Проверяем авторизацию
         $this->auth->requireAuth();
 
-        // Получаем ID товара из объекта запроса
-        $productId = $request->getProductId();
+        $userId = $this->auth->getUserId();
 
-        // Если ID некорректный - редирект в каталог
-        if ($productId <= 0) {
-            $this->auth->redirect("/catalog");
+        if ($this->cartService->clearCart($userId)) {
+            $this->auth->setSessionValue('success_message', "Корзина успешно очищена");
+        } else {
+            $this->auth->setSessionValue('error_message', "Ошибка при очистке корзины");
         }
 
-        // Получаем текущее количество товара в корзине
-        $currentAmount = $this->cartService->getCurrentAmount($this->auth->getUserId(), $productId);
-
-        // Увеличиваем количество на 1 и обновляем корзину
-        $this->cartService->updateItem($this->auth->getUserId(), $productId, $currentAmount + 1);
-
-        // Возвращаемся в каталог
-        $this->auth->redirect("/catalog");
+        $this->auth->redirect("/cart");
     }
 
     /**
-     * Уменьшение количества товара в корзине
-     * POST /cart/decrease
+     * AJAX-метод для очистки корзины
      */
-    public function decreaseProduct(UpdateCartRequest $request): void
+    public function ajaxClearCart(): void
     {
-        // Проверяем метод запроса
+        header('Content-Type: application/json; charset=utf-8');
+
+        if ($this->auth->isGuest()) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Необходимо авторизоваться'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
         if (!$this->auth->isPostRequest()) {
-            $this->auth->redirect("/cart");
+            echo json_encode([
+                'success' => false,
+                'error' => 'Неверный метод запроса'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
         }
 
-        // Проверяем авторизацию
-        $this->auth->requireAuth();
+        $userId = $this->auth->getUserId();
 
-        // Получаем ID товара
-        $productId = $request->getProductId();
+        try {
+            $result = $this->cartService->clearCart($userId);
 
-        // Если ID некорректный - редирект
+            if ($result) {
+                echo json_encode([
+                    'success' => true,
+                    'cart_count' => 0,
+                    'cart_total' => 0,
+                    'is_empty' => true,
+                    'message' => 'Корзина успешно очищена'
+                ], JSON_UNESCAPED_UNICODE);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Ошибка при очистке корзины'
+                ], JSON_UNESCAPED_UNICODE);
+            }
+        } catch (\Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    /**
+     * AJAX-метод для увеличения количества товара
+     */
+    public function ajaxIncreaseProduct(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if ($this->auth->isGuest()) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Необходимо авторизоваться'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (!$this->auth->isPostRequest()) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Неверный метод запроса'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $productId = (int)($this->auth->getPostParam('product_id', 0));
+
         if ($productId <= 0) {
-            $this->auth->redirect("/catalog");
+            echo json_encode([
+                'success' => false,
+                'error' => 'Неверный ID товара'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
         }
 
-        // Получаем текущее количество
-        $currentAmount = $this->cartService->getCurrentAmount($this->auth->getUserId(), $productId);
+        $userId = $this->auth->getUserId();
+        $currentAmount = $this->cartService->getCurrentAmount($userId, $productId);
+        $newAmount = $currentAmount + 1;
 
-        // Новое количество (не меньше 1)
+        try {
+            $result = $this->cartService->updateItem($userId, $productId, $newAmount);
+
+            if ($result) {
+                $cartTotalAmount = $this->cartService->getCartTotalAmount($userId);
+                $cartTotalPrice = $this->cartService->getCartTotalPrice($userId);
+
+                echo json_encode([
+                    'success' => true,
+                    'cart_count' => $cartTotalAmount,
+                    'cart_total' => $cartTotalPrice,
+                    'product_id' => $productId,
+                    'new_amount' => $newAmount
+                ], JSON_UNESCAPED_UNICODE);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Ошибка при обновлении корзины'
+                ], JSON_UNESCAPED_UNICODE);
+            }
+        } catch (\Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    /**
+     * AJAX-метод для уменьшения количества товара
+     */
+    public function ajaxDecreaseProduct(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if ($this->auth->isGuest()) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Необходимо авторизоваться'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (!$this->auth->isPostRequest()) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Неверный метод запроса'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $productId = (int)($this->auth->getPostParam('product_id', 0));
+
+        if ($productId <= 0) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Неверный ID товара'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $userId = $this->auth->getUserId();
+        $currentAmount = $this->cartService->getCurrentAmount($userId, $productId);
         $newAmount = max(1, $currentAmount - 1);
 
-        // Если количество изменилось - обновляем корзину
+        if ($newAmount === $currentAmount) {
+            echo json_encode([
+                'success' => true,
+                'cart_count' => $this->cartService->getCartTotalAmount($userId),
+                'cart_total' => $this->cartService->getCartTotalPrice($userId),
+                'product_id' => $productId,
+                'new_amount' => $newAmount
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        try {
+            $result = $this->cartService->updateItem($userId, $productId, $newAmount);
+
+            if ($result) {
+                $cartTotalAmount = $this->cartService->getCartTotalAmount($userId);
+                $cartTotalPrice = $this->cartService->getCartTotalPrice($userId);
+
+                echo json_encode([
+                    'success' => true,
+                    'cart_count' => $cartTotalAmount,
+                    'cart_total' => $cartTotalPrice,
+                    'product_id' => $productId,
+                    'new_amount' => $newAmount
+                ], JSON_UNESCAPED_UNICODE);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Ошибка при обновлении корзины'
+                ], JSON_UNESCAPED_UNICODE);
+            }
+        } catch (\Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    /**
+     * AJAX-метод для удаления товара из корзины
+     */
+    public function ajaxRemoveItem(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if ($this->auth->isGuest()) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Необходимо авторизоваться'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (!$this->auth->isPostRequest()) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Неверный метод запроса'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $productId = (int)($this->auth->getPostParam('product_id', 0));
+
+        if ($productId <= 0) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Неверный ID товара'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $userId = $this->auth->getUserId();
+
+        try {
+            $result = $this->cartService->removeItem($userId, $productId);
+
+            if ($result) {
+                $cartTotalAmount = $this->cartService->getCartTotalAmount($userId);
+                $cartTotalPrice = $this->cartService->getCartTotalPrice($userId);
+                $isEmpty = $this->cartService->isCartEmpty($userId);
+
+                echo json_encode([
+                    'success' => true,
+                    'cart_count' => $cartTotalAmount,
+                    'cart_total' => $cartTotalPrice,
+                    'is_empty' => $isEmpty,
+                    'product_id' => $productId
+                ], JSON_UNESCAPED_UNICODE);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Ошибка при удалении товара'
+                ], JSON_UNESCAPED_UNICODE);
+            }
+        } catch (\Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    public function increaseProduct(UpdateCartRequest $request): void
+    {
+        if (!$this->auth->isPostRequest()) {
+            $this->auth->redirect("/cart");
+        }
+
+        $this->auth->requireAuth();
+
+        $productId = $request->getProductId();
+
+        if ($productId <= 0) {
+            $this->auth->redirect("/catalog");
+        }
+
+        $currentAmount = $this->cartService->getCurrentAmount($this->auth->getUserId(), $productId);
+
+        $this->cartService->updateItem($this->auth->getUserId(), $productId, $currentAmount + 1);
+
+        $this->auth->redirect("/cart");
+    }
+
+    public function decreaseProduct(UpdateCartRequest $request): void
+    {
+        if (!$this->auth->isPostRequest()) {
+            $this->auth->redirect("/cart");
+        }
+
+        $this->auth->requireAuth();
+
+        $productId = $request->getProductId();
+
+        if ($productId <= 0) {
+            $this->auth->redirect("/catalog");
+        }
+
+        $currentAmount = $this->cartService->getCurrentAmount($this->auth->getUserId(), $productId);
+
+        $newAmount = max(1, $currentAmount - 1);
+
         if ($newAmount !== $currentAmount) {
             $this->cartService->updateItem($this->auth->getUserId(), $productId, $newAmount);
         }
 
-        // Возвращаемся в каталог
-        $this->auth->redirect("/catalog");
+        $this->auth->redirect("/cart");
     }
 }

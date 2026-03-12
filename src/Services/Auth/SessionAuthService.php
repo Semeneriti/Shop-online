@@ -1,8 +1,10 @@
 <?php
 
-namespace Services; // Пространство имен для сервисов
+namespace Services\Auth; // Пространство имен для сервисов
 
-use Models\User; // Импортируем модель пользователя
+use Models\User;
+
+// Импортируем модель пользователя
 
 // Класс SessionAuthService - реализация аутентификации через сессии PHP
 // Реализует интерфейс AuthInterface

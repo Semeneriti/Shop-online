@@ -42,6 +42,19 @@
             margin-bottom: 15px;
         }
 
+        .error-box {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .error-box p {
+            margin: 5px 0;
+        }
+
         .order-summary {
             background-color: #f8f9fa;
             border-radius: 8px;
@@ -151,27 +164,30 @@
 <div class="container">
     <h1>✅ Оформление заказа</h1>
 
+    <?php if (!empty($errors)): ?>
+        <div class="error-box">
+            <?php foreach ($errors as $error): ?>
+                <p><?= htmlspecialchars(is_array($error) ? implode(', ', $error) : $error) ?></p>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
     <?php if (!empty($cartData['items'])): ?>
         <div class="order-summary">
             <h2>Ваш заказ:</h2>
             <ul class="order-items">
                 <?php foreach ($cartData['items'] as $item): ?>
                     <?php
-                    // Получаем данные о товаре (универсальный код)
                     $productData = $item['product'] ?? [];
                     $amount = $item['amount'] ?? 1;
 
-                    // Определяем название и цену товара (работает и с объектом, и с массивом)
                     if (is_object($productData) && method_exists($productData, 'getName')) {
-                        // Это объект Product с методами
                         $productName = $productData->getName();
                         $productPrice = $productData->getPrice();
                     } elseif (is_array($productData)) {
-                        // Это массив с данными
                         $productName = $productData['name'] ?? 'Товар';
                         $productPrice = $productData['price'] ?? 0;
                     } else {
-                        // Неизвестный формат
                         $productName = 'Товар';
                         $productPrice = 0;
                     }
