@@ -27,3 +27,4 @@ public function __construct()
     $this->logger = new DatabaseLogger($pdo); // ← теперь пишет в БД
 }
 **/
+//github
