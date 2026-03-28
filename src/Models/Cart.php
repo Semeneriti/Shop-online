@@ -18,7 +18,6 @@ class Cart extends Model
         return 'user_products';
     }
 
-    // Геттеры
     public function getUserId(): int
     {
         return $this->userId;
@@ -47,19 +46,15 @@ class Cart extends Model
         return $total;
     }
 
-    // Методы для работы с корзиной
     public function addItem(int $productId, int $amount): bool
     {
-        // Проверяем, есть ли уже такой товар в корзине
         foreach ($this->items as $key => $item) {
             if ($item['product']->getId() === $productId) {
-                // Обновляем количество
                 $newAmount = $item['amount'] + $amount;
                 return $this->updateItem($productId, $newAmount);
             }
         }
 
-        // Добавляем новый товар
         $product = Product::findById($productId);
         if (!$product) {
             throw new \InvalidArgumentException("Товар не найден");
@@ -161,45 +156,65 @@ class Cart extends Model
         return empty($this->items);
     }
 
-    // Загрузка товаров из БД
+    /**
+     * Загружает товары пользователя из базы данных с использованием JOIN
+     */
     private function loadItems(): void
     {
         $this->items = [];
 
         $tableName = self::getTableName();
-        $sql = "SELECT p.*, up.amount, up.id as cart_item_id 
+
+        $sql = "SELECT 
+                    up.id as cart_item_id,
+                    up.amount,
+                    p.id as product_id,
+                    p.name as product_name,
+                    p.description as product_description,
+                    p.price as product_price,
+                    p.stock as product_stock,
+                    p.image_url as product_image_url,
+                    p.created_at as product_created_at,
+                    p.updated_at as product_updated_at
                 FROM {$tableName} up 
-                JOIN products p ON up.product_id = p.id 
+                INNER JOIN products p ON up.product_id = p.id 
                 WHERE up.user_id = :user_id";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['user_id' => $this->userId]);
 
-        while ($data = $stmt->fetch()) {
-            $product = Product::fromArray($data);
+        while ($row = $stmt->fetch()) {
+            $product = new Product(
+                $row['product_name'],
+                $row['product_description'],
+                (float)$row['product_price'],
+                (int)$row['product_stock'],
+                (int)$row['product_id'],
+                $row['product_created_at'],
+                $row['product_updated_at'],
+                $row['product_image_url']
+            );
+
             $this->items[] = [
-                'cart_item_id' => $data['cart_item_id'],
+                'cart_item_id' => $row['cart_item_id'],
                 'product' => $product,
-                'amount' => (int) $data['amount'],
-                'total_price' => $product->getPrice() * (int) $data['amount']
+                'amount' => (int)$row['amount'],
+                'total_price' => $product->getPrice() * (int)$row['amount']
             ];
         }
     }
 
-    // Статический метод для получения корзины пользователя
     public static function getByUserId(int $userId): Cart
     {
         return new self($userId);
     }
 
-    // Метод для оформления заказа
     public function checkout(): array
     {
         if ($this->isEmpty()) {
             throw new \RuntimeException("Корзина пуста");
         }
 
-        // Проверяем доступность всех товаров
         foreach ($this->items as $item) {
             if ($item['amount'] > $item['product']->getStock()) {
                 throw new \RuntimeException(
@@ -210,7 +225,6 @@ class Cart extends Model
 
         $orderItems = [];
 
-        // Резервируем товары и создаем записи заказа
         foreach ($this->items as $item) {
             $product = $item['product'];
             $product->decreaseStock($item['amount']);
@@ -224,7 +238,6 @@ class Cart extends Model
             ];
         }
 
-        // Очищаем корзину после оформления заказа
         $this->clear();
 
         return [
@@ -236,7 +249,6 @@ class Cart extends Model
         ];
     }
 
-    // Преобразование в массив
     public function toArray(): array
     {
         $itemsArray = [];
@@ -256,4 +268,5 @@ class Cart extends Model
             'total_price' => $this->getTotalPrice(),
             'is_empty' => $this->isEmpty()
         ];
-    }}
+    }
+}

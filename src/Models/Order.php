@@ -1,6 +1,8 @@
 <?php
 namespace Models;
 
+use DTO\OrderCreateDto;
+
 class Order extends Model
 {
     private ?int $id;
@@ -34,6 +36,7 @@ class Order extends Model
         $this->comment = $comment;
         $this->totalPrice = $totalPrice;
         $this->status = $status;
+
         $this->createdAt = $createdAt ? new \DateTime($createdAt) : new \DateTime();
         $this->updatedAt = $updatedAt ? new \DateTime($updatedAt) : new \DateTime();
     }
@@ -43,51 +46,15 @@ class Order extends Model
         return 'orders';
     }
 
-    // Геттеры
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getUserId(): int
-    {
-        return $this->userId;
-    }
-
-    public function getAddress(): string
-    {
-        return $this->address;
-    }
-
-    public function getPhone(): string
-    {
-        return $this->phone;
-    }
-
-    public function getComment(): ?string
-    {
-        return $this->comment;
-    }
-
-    public function getTotalPrice(): float
-    {
-        return $this->totalPrice;
-    }
-
-    public function getStatus(): string
-    {
-        return $this->status;
-    }
-
-    public function getCreatedAt(): \DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): \DateTime
-    {
-        return $this->updatedAt;
-    }
+    public function getId(): ?int { return $this->id; }
+    public function getUserId(): int { return $this->userId; }
+    public function getAddress(): string { return $this->address; }
+    public function getPhone(): string { return $this->phone; }
+    public function getComment(): ?string { return $this->comment; }
+    public function getTotalPrice(): float { return $this->totalPrice; }
+    public function getStatus(): string { return $this->status; }
+    public function getCreatedAt(): \DateTime { return $this->createdAt; }
+    public function getUpdatedAt(): \DateTime { return $this->updatedAt; }
 
     public function getItems(): array
     {
@@ -97,11 +64,11 @@ class Order extends Model
         return $this->items;
     }
 
-    // Статические методы
     public static function findById(int $id): ?Order
     {
         $pdo = self::getConnection();
         $tableName = self::getTableName();
+
         $stmt = $pdo->prepare("SELECT * FROM {$tableName} WHERE id = :id");
         $stmt->execute(['id' => $id]);
         $data = $stmt->fetch();
@@ -120,32 +87,40 @@ class Order extends Model
     {
         $pdo = self::getConnection();
         $tableName = self::getTableName();
-        $stmt = $pdo->prepare("
-            SELECT o.*, 
-                   (SELECT COUNT(*) FROM order_products op WHERE op.order_id = o.id) as items_count
-            FROM {$tableName} o 
-            WHERE o.user_id = :user_id 
-            ORDER BY o.created_at DESC
-        ");
+
+        $sql = "SELECT 
+                    o.*,
+                    COUNT(op.id) as items_count,
+                    COALESCE(SUM(op.amount), 0) as total_items
+                FROM {$tableName} o 
+                LEFT JOIN order_products op ON o.id = op.order_id 
+                WHERE o.user_id = :user_id 
+                GROUP BY o.id 
+                ORDER BY o.created_at DESC";
+
+        $stmt = $pdo->prepare($sql);
         $stmt->execute(['user_id' => $userId]);
 
         $orders = [];
         while ($data = $stmt->fetch()) {
             $order = self::fromArray($data);
-            $orders[] = $order;
+            $orders[] = [
+                'order' => $order,
+                'items_count' => (int)$data['items_count'],
+                'total_items' => (int)$data['total_items']
+            ];
         }
 
         return $orders;
     }
 
-    public static function createFromCart(array $cartData): ?Order
+    public static function createFromCart(OrderCreateDto $dto): ?Order
     {
         $pdo = self::getConnection();
 
         try {
             $pdo->beginTransaction();
 
-            // Создаем заказ
             $tableName = self::getTableName();
             $sql = "INSERT INTO {$tableName} (user_id, address, phone, comment, total_price, status, created_at, updated_at) 
                     VALUES (:user_id, :address, :phone, :comment, :total_price, :status, NOW(), NOW())
@@ -153,19 +128,18 @@ class Order extends Model
 
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
-                ':user_id' => $cartData['user_id'],
-                ':address' => $cartData['address'],
-                ':phone' => $cartData['phone'],
-                ':comment' => $cartData['comment'],
-                ':total_price' => $cartData['total_price'],
+                ':user_id' => $dto->getUserId(),
+                ':address' => $dto->getAddress(),
+                ':phone' => $dto->getPhone(),
+                ':comment' => $dto->getComment(),
+                ':total_price' => $dto->getTotalPrice(),
                 ':status' => 'новый'
             ]);
 
             $result = $stmt->fetch();
             $orderId = $result['id'];
 
-            // Добавляем товары из корзины
-            foreach ($cartData['items'] as $item) {
+            foreach ($dto->getItems() as $item) {
                 $sql = 'INSERT INTO order_products (order_id, product_id, amount, price) 
                         VALUES (:order_id, :product_id, :amount, :price)';
 
@@ -180,7 +154,6 @@ class Order extends Model
 
             $pdo->commit();
 
-            // Получаем созданный заказ
             return self::findById($orderId);
 
         } catch (\Exception $e) {
@@ -189,34 +162,58 @@ class Order extends Model
         }
     }
 
-    // Вспомогательные методы
     private function loadItems(): void
     {
         if (!$this->id) {
             return;
         }
 
-        $sql = 'SELECT op.*, p.name as product_name 
+        $sql = "SELECT 
+                    op.id as order_product_id,
+                    op.order_id,
+                    op.product_id,
+                    op.amount,
+                    op.price,
+                    p.name as product_name,
+                    p.description as product_description,
+                    p.stock as product_stock,
+                    p.image_url as product_image_url
                 FROM order_products op 
-                JOIN products p ON op.product_id = p.id 
-                WHERE op.order_id = :order_id';
+                INNER JOIN products p ON op.product_id = p.id 
+                WHERE op.order_id = :order_id";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['order_id' => $this->id]);
 
         $this->items = [];
-        while ($data = $stmt->fetch()) {
+        while ($row = $stmt->fetch()) {
             $this->items[] = [
-                'product_id' => $data['product_id'],
-                'product_name' => $data['product_name'],
-                'amount' => (int)$data['amount'],
-                'price' => (float)$data['price']
+                'order_product_id' => $row['order_product_id'],
+                'product_id' => $row['product_id'],
+                'product_name' => $row['product_name'],
+                'product_description' => $row['product_description'],
+                'amount' => (int)$row['amount'],
+                'price' => (float)$row['price'],
+                'total' => (float)$row['price'] * (int)$row['amount']
             ];
         }
     }
 
     public function getDetails(): array
     {
+        $items = $this->getItems();
+
+        $formattedItems = [];
+        foreach ($items as $item) {
+            $formattedItems[] = [
+                'product_id' => $item['product_id'],
+                'product_name' => $item['product_name'],
+                'amount' => $item['amount'],
+                'price' => $item['price'],
+                'total' => $item['total']
+            ];
+        }
+
         return [
             'id' => $this->id,
             'user_id' => $this->userId,
@@ -227,8 +224,8 @@ class Order extends Model
             'status' => $this->status,
             'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
             'updated_at' => $this->updatedAt->format('Y-m-d H:i:s'),
-            'items' => $this->getItems(),
-            'items_count' => count($this->getItems())
+            'items' => $formattedItems,
+            'items_count' => count($formattedItems)
         ];
     }
 

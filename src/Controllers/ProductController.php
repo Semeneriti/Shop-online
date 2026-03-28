@@ -4,6 +4,8 @@ namespace Controllers;
 use Models\Product;
 use Models\Review;
 use Services\CartService;
+use Request\AddProductRequest;
+use DTO\AddToCartDto;
 
 class ProductController extends BaseController
 {
@@ -24,7 +26,103 @@ class ProductController extends BaseController
         require_once __DIR__ . '/../Views/add_product.php';
     }
 
-    public function addToCart(): void
+    /**
+     * AJAX-метод для добавления товара в корзину
+     * POST /api/cart/add
+     */
+    public function ajaxAddToCart(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if ($this->auth->isGuest()) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Необходимо авторизоваться'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if (!$this->auth->isPostRequest()) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Неверный метод запроса'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $productId = (int)($this->auth->getPostParam('product_id', 0));
+        $amount = (int)($this->auth->getPostParam('amount', 1));
+
+        if ($productId <= 0) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Неверный ID товара'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if ($amount <= 0) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Количество должно быть больше 0'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $product = Product::findById($productId);
+        if (!$product) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Товар не найден'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        if ($amount > $product->getStock()) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Недостаточно товара на складе. Доступно: ' . $product->getStock() . ' шт.'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $userId = $this->auth->getUserId();
+
+        try {
+            $currentAmount = $this->cartService->getCurrentAmount($userId, $productId);
+            $newAmount = $currentAmount + $amount;
+
+            $dto = new AddToCartDto($userId, $productId, $newAmount);
+            $result = $this->cartService->addItem($dto);
+
+            if ($result) {
+                $cartTotalAmount = $this->cartService->getCartTotalAmount($userId);
+                $cartTotalPrice = $this->cartService->getCartTotalPrice($userId);
+
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Товар добавлен в корзину',
+                    'cart_count' => $cartTotalAmount,
+                    'cart_total' => $cartTotalPrice,
+                    'product_id' => $productId,
+                    'new_amount' => $newAmount
+                ], JSON_UNESCAPED_UNICODE);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Ошибка при добавлении товара в корзину'
+                ], JSON_UNESCAPED_UNICODE);
+            }
+        } catch (\Exception $e) {
+            $this->logger->error('AJAX add to cart error: ' . $e->getMessage());
+            echo json_encode([
+                'success' => false,
+                'error' => 'Произошла ошибка: ' . $e->getMessage()
+            ], JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    public function addToCart(AddProductRequest $request = null): void
     {
         if (!$this->auth->isPostRequest()) {
             $this->auth->redirect("/add-product");
@@ -32,38 +130,38 @@ class ProductController extends BaseController
 
         $this->auth->requireAuth();
 
-        $productId = $this->auth->getPostInt('product-id');
-        $amount = $this->auth->getPostInt('amount');
-
-        if ($productId <= 0 || $amount <= 0) {
-            $this->auth->setSessionValue('error_message', "Необходимо указать товар и количество");
-            $this->auth->redirect("/add-product");
+        if ($request == null) {
+            $request = new AddProductRequest($_POST);
         }
 
+        $productId = $request->getProductId();
+        $amount = $request->getAmount();
+
         $product = Product::findById($productId);
+
         if (!$product) {
             $this->auth->setSessionValue('error_message', "Товар не найден");
             $this->auth->redirect("/add-product");
+            return;
         }
 
         if ($amount > $product->getStock()) {
             $this->auth->setSessionValue('error_message', "Недостаточно товара на складе. Доступно: " . $product->getStock() . " шт.");
             $this->auth->redirect("/add-product");
+            return;
         }
 
-        try {
-            if ($this->cartService->addItem($this->auth->getUserId(), $productId, $amount)) {
-                $this->auth->setSessionValue('success_message', "Товар успешно добавлен в корзину!");
-                $this->auth->redirect("/catalog");
-            } else {
-                $this->auth->setSessionValue('error_message', "Ошибка при добавлении товара в корзину");
-                $this->auth->redirect("/add-product");
-            }
-        } catch (\InvalidArgumentException $e) {
-            $this->auth->setSessionValue('error_message', $e->getMessage());
-            $this->auth->redirect("/add-product");
-        } catch (\Exception $e) {
-            $this->auth->setSessionValue('error_message', "Произошла ошибка: " . $e->getMessage());
+        $dto = new AddToCartDto(
+            $this->auth->getUserId(),
+            $productId,
+            $amount
+        );
+
+        if ($this->cartService->addItem($dto)) {
+            $this->auth->setSessionValue('success_message', "Товар успешно добавлен в корзину!");
+            $this->auth->redirect("/catalog");
+        } else {
+            $this->auth->setSessionValue('error_message', "Ошибка при добавлении товара в корзину");
             $this->auth->redirect("/add-product");
         }
     }
@@ -90,7 +188,6 @@ class ProductController extends BaseController
         $this->auth->unsetSessionValue('success_message');
         $this->auth->unsetSessionValue('error_message');
 
-        // Передаем auth в шаблон
         $auth = $this->auth;
 
         require_once __DIR__ . '/../Views/product.php';
@@ -108,25 +205,11 @@ class ProductController extends BaseController
         $rating = $this->auth->getPostInt('rating');
         $text = $this->auth->getPostString('text');
 
-        if ($productId <= 0) {
-            $this->auth->setSessionValue('error_message', "Товар не найден");
-            $this->auth->redirect("/catalog");
-        }
-
         $product = Product::findById($productId);
         if (!$product) {
             $this->auth->setSessionValue('error_message', "Товар не найден");
             $this->auth->redirect("/catalog");
-        }
-
-        if ($rating < 1 || $rating > 5) {
-            $this->auth->setSessionValue('error_message', "Оценка должна быть от 1 до 5");
-            $this->auth->redirect("/product?id=" . $productId);
-        }
-
-        if (empty($text)) {
-            $this->auth->setSessionValue('error_message', "Напишите текст отзыва");
-            $this->auth->redirect("/product?id=" . $productId);
+            return;
         }
 
         try {

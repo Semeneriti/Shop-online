@@ -4,6 +4,9 @@ namespace Controllers;
 use Models\User;
 use Services\CartService;
 use Services\OrderService;
+use Request\RegisterRequest;
+use Request\LoginRequest;
+use Request\UpdateProfileRequest;
 
 class UserController extends BaseController
 {
@@ -26,7 +29,7 @@ class UserController extends BaseController
         require_once __DIR__ . '/../Views/registration.php';
     }
 
-    public function registrate(): void
+    public function registrate(RegisterRequest $request = null): void
     {
         if (!$this->auth->isPostRequest()) {
             $this->auth->redirect('/registration');
@@ -36,47 +39,22 @@ class UserController extends BaseController
             $this->auth->redirect('/catalog');
         }
 
-        $errors = [];
-
-        // Получаем данные из формы с правильными именами
-        $name = $this->auth->getPostString('name');
-        $email = $this->auth->getPostString('email');
-        $password = $this->auth->getPostParam('password');
-        $passwordRepeat = $this->auth->getPostParam('passwordRepeat');
-
-        // Валидация
-        if (empty($name)) {
-            $errors['name'] = 'Введите имя';
-        } elseif (strlen($name) < 2) {
-            $errors['name'] = 'Имя должно быть не меньше 2 символов';
+        if ($request == null) {
+            $request = new RegisterRequest($_POST);
         }
 
-        if (empty($email)) {
-            $errors['email'] = 'Введите email';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Неверный формат email';
-        }
-
-        if (empty($password)) {
-            $errors['password'] = 'Введите пароль';
-        } elseif (strlen($password) < 6) {
-            $errors['password'] = 'Пароль должен быть минимум 6 символов';
-        }
-
-        if (empty($passwordRepeat)) {
-            $errors['passwordRepeat'] = 'Подтвердите пароль';
-        } elseif ($password !== $passwordRepeat) {
-            $errors['passwordRepeat'] = 'Пароли не совпадают';
-        }
+        $errors = $request->getErrors();
 
         if (empty($errors)) {
-            // Проверяем, существует ли пользователь
+            $name = $request->getName();
+            $email = $request->getEmail();
+            $password = $request->getPassword();
+
             $existingUser = User::findByEmail($email);
 
             if ($existingUser) {
                 $errors['email'] = 'Пользователь с таким email уже существует';
             } else {
-                // Хешируем пароль и создаем пользователя
                 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
                 $user = new User($name, $email, $passwordHash);
 
@@ -89,41 +67,34 @@ class UserController extends BaseController
             }
         }
 
-        // Если есть ошибки, показываем форму снова
         require_once __DIR__ . '/../Views/registration.php';
     }
 
-    public function login(): void
+    public function login(LoginRequest $request = null): void
     {
         if (!$this->auth->isGuest()) {
             $this->auth->redirect('/catalog');
         }
 
-        $errors = [];
+        if ($request == null) {
+            $request = new LoginRequest($_POST);
+        }
 
-        if ($this->auth->isPostRequest()) {
-            $email = $this->auth->getPostString('email');
-            $password = $this->auth->getPostParam('password');
+        $errors = $request->getErrors();
 
-            if (empty($email)) {
-                $errors['email'] = 'Введите email';
-            }
+        if ($this->auth->isPostRequest() && empty($errors)) {
+            $email = $request->getEmail();
+            $password = $request->getPassword();
 
-            if (empty($password)) {
-                $errors['password'] = 'Введите пароль';
-            }
+            $user = User::findByEmail($email);
 
-            if (empty($errors)) {
-                $user = User::findByEmail($email);
-
-                if (!$user) {
-                    $errors['general'] = 'Неверный email или пароль';
-                } elseif ($user->verifyPassword($password)) {
-                    $this->auth->login($user);
-                    $this->auth->redirect('/catalog');
-                } else {
-                    $errors['general'] = 'Неверный email или пароль';
-                }
+            if (!$user) {
+                $errors['general'] = 'Неверный email или пароль';
+            } elseif ($user->verifyPassword($password)) {
+                $this->auth->login($user);
+                $this->auth->redirect('/catalog');
+            } else {
+                $errors['general'] = 'Неверный email или пароль';
             }
         }
 
@@ -142,7 +113,22 @@ class UserController extends BaseController
 
         $userId = $this->auth->getUserId();
         $cartItems = $this->cartService->getCartItems($userId);
-        $orders = $this->orderService->getOrdersByUserId($userId);
+        $ordersData = $this->orderService->getOrdersByUserId($userId);
+
+        // Преобразуем данные для шаблона
+        $orders = [];
+        foreach ($ordersData as $orderData) {
+            $orders[] = [
+                'id' => $orderData['order']->getId(),
+                'address' => $orderData['order']->getAddress(),
+                'phone' => $orderData['order']->getPhone(),
+                'total_price' => $orderData['order']->getTotalPrice(),
+                'status' => $orderData['order']->getStatus(),
+                'created_at' => $orderData['order']->getCreatedAt()->format('Y-m-d H:i:s'),
+                'items_count' => $orderData['items_count'],
+                'total_items' => $orderData['total_items']
+            ];
+        }
 
         require_once __DIR__ . '/../Views/profile.php';
     }
@@ -156,7 +142,7 @@ class UserController extends BaseController
         require_once __DIR__ . '/../Views/edit_profile.php';
     }
 
-    public function updateProfile(): void
+    public function updateProfile(UpdateProfileRequest $request): void
     {
         $this->auth->requireAuth();
 
@@ -164,49 +150,31 @@ class UserController extends BaseController
             $this->auth->redirect("/edit-profile");
         }
 
-        $errors = [];
-        $name = $this->auth->getPostString('name');
-        $email = $this->auth->getPostString('email');
-        $password = $this->auth->getPostParam('password');
-        $passwordConfirm = $this->auth->getPostParam('password_confirm');
-
+        $errors = $request->getErrors();
         $user = $this->auth->getCurrentUser();
 
-        if (empty($name)) {
-            $errors['name'] = 'Введите имя';
-        }
-
-        if (empty($email)) {
-            $errors['email'] = 'Введите email';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Неверный формат email';
-        }
-
-        if ($email !== $user->getEmail()) {
-            $existingUser = User::findByEmail($email);
-            if ($existingUser) {
-                $errors['email'] = 'Этот email уже используется другим пользователем';
-            }
-        }
-
-        if (!empty($password)) {
-            if (strlen($password) < 6) {
-                $errors['password'] = 'Пароль должен быть не менее 6 символов';
-            } elseif ($password !== $passwordConfirm) {
-                $errors['password_confirm'] = 'Пароли не совпадают';
-            }
-        }
-
         if (empty($errors)) {
-            try {
-                $user->updateProfile($name, $email, !empty($password) ? $password : null);
+            $name = $request->getName();
+            $email = $request->getEmail();
 
-                $this->auth->setSessionValue('userName', $name);
+            if ($email !== $user->getEmail()) {
+                $existingUser = User::findByEmail($email);
+                if ($existingUser) {
+                    $errors['email'] = 'Этот email уже используется другим пользователем';
+                }
+            }
 
-                $this->auth->setSessionValue('success_message', 'Профиль успешно обновлен');
-                $this->auth->redirect("/profile");
-            } catch (\Exception $e) {
-                $errors[] = 'Ошибка при обновлении профиля: ' . $e->getMessage();
+            if (empty($errors)) {
+                try {
+                    $password = $request->getPassword();
+                    $user->updateProfile($name, $email, !empty($password) ? $password : null);
+
+                    $this->auth->setSessionValue('userName', $name);
+                    $this->auth->setSessionValue('success_message', 'Профиль успешно обновлен');
+                    $this->auth->redirect("/profile");
+                } catch (\Exception $e) {
+                    $errors[] = 'Ошибка при обновлении профиля: ' . $e->getMessage();
+                }
             }
         }
 

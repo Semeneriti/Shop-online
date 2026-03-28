@@ -1,15 +1,29 @@
 <?php
+// src/Controllers/BaseController.php
 namespace Controllers;
 
-use Models\User;
-use Services\AuthService;
+use Services\Auth\AuthInterface;
+use Services\Auth\SessionAuthService;
+use Services\Loggers\LoggerInterface;
+use Services\Loggers\LoggerService;
 
 abstract class BaseController
 {
-    protected AuthService $auth;
+    protected AuthInterface $auth;
+    protected LoggerInterface $logger;
 
     public function __construct()
     {
-        $this->auth = new AuthService();
+        $this->auth = new SessionAuthService();
+        $this->logger = new LoggerService();
     }
 }
+
+/** Заменить на запись в БД:
+public function __construct()
+{
+    $this->auth = new SessionAuthService();
+    $pdo = \Models\Model::getConnection();
+    $this->logger = new DatabaseLogger($pdo); // ← теперь пишет в БД
+}
+**/

@@ -37,6 +37,24 @@ $totalPrice = $cartData['total_price'] ?? 0;
             font-size: 28px;
         }
 
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -96,11 +114,24 @@ $totalPrice = $cartData['total_price'] ?? 0;
 
         .btn-red {
             background-color: #e74c3c;
-            padding: 5px 10px;
-            font-size: 12px;
         }
 
         .btn-red:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-clear {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-clear:hover {
             background-color: #c0392b;
         }
 
@@ -113,10 +144,17 @@ $totalPrice = $cartData['total_price'] ?? 0;
 
         .actions {
             display: flex;
-            gap: 15px;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
             margin-top: 20px;
+        }
+
+        .actions-left {
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
 
         .checkout-link {
@@ -164,6 +202,22 @@ $totalPrice = $cartData['total_price'] ?? 0;
 <body>
 <div class="container">
     <h1>🛒 Моя корзина</h1>
+
+    <?php
+    $successMessage = $_SESSION['success_message'] ?? '';
+    $errorMessage = $_SESSION['error_message'] ?? '';
+
+    if ($successMessage):
+        unset($_SESSION['success_message']);
+        ?>
+        <div class="success-message"><?= htmlspecialchars($successMessage) ?></div>
+    <?php endif; ?>
+
+    <?php if ($errorMessage):
+        unset($_SESSION['error_message']);
+        ?>
+        <div class="error-message"><?= htmlspecialchars($errorMessage) ?></div>
+    <?php endif; ?>
 
     <?php if (!empty($cartItems)): ?>
         <table>
@@ -251,7 +305,12 @@ $totalPrice = $cartData['total_price'] ?? 0;
         </table>
 
         <div class="actions">
-            <a href="/catalog" class="continue-link">← Продолжить покупки</a>
+            <div class="actions-left">
+                <a href="/catalog" class="continue-link">← Продолжить покупки</a>
+                <form action="/cart/clear" method="POST" style="display: inline;" onsubmit="return confirm('Вы уверены, что хотите очистить корзину?');">
+                    <button type="submit" class="btn-clear">🗑️ Очистить корзину</button>
+                </form>
+            </div>
             <a href="/checkout" class="checkout-link">✅ Оформить заказ</a>
         </div>
     <?php else: ?>

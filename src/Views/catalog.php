@@ -12,6 +12,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Каталог товаров</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -58,6 +59,16 @@
             text-decoration: underline;
         }
 
+        .cart-badge {
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            margin-left: 5px;
+            display: inline-block;
+        }
+
         .cart-info {
             background-color: white;
             padding: 15px 20px;
@@ -69,19 +80,14 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .cart-info.guest {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
+        .cart-info-empty {
+            background-color: #fff3e0;
+            border: 1px solid #ff9800;
         }
 
         .cart-info-user {
             background-color: #e8f5e9;
             border: 1px solid #4caf50;
-        }
-
-        .cart-info-empty {
-            background-color: #fff3e0;
-            border: 1px solid #ff9800;
         }
 
         .cart-link {
@@ -196,7 +202,7 @@
 
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -264,8 +270,6 @@
 
         .product-actions {
             margin-top: 10px;
-            display: flex;
-            justify-content: center;
         }
 
         .cart-control {
@@ -317,6 +321,42 @@
             margin-top: 5px;
             font-size: 14px;
         }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 4px;
+            color: white;
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.success {
+            background-color: #27ae60;
+        }
+
+        .notification.error {
+            background-color: #e74c3c;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -324,7 +364,7 @@
     <div class="header">
         <h1>🛍️ Каталог товаров</h1>
         <div class="nav">
-            <a href="/cart">Корзина</a>
+            <a href="/cart">Корзина <span id="cart-badge" class="cart-badge" style="display: <?= $cartItemsCount > 0 ? 'inline-block' : 'none' ?>"><?= $cartItemsCount ?></span></a>
             <?php if (isset($_SESSION['userId'])): ?>
                 <a href="/profile">Профиль</a>
                 <a href="/logout">Выход</a>
@@ -344,26 +384,24 @@
     <?php endif; ?>
 
     <?php if (isset($_SESSION['userId'])): ?>
-        <?php if ($cartItemsCount > 0): ?>
-            <div class="cart-info cart-info-user">
-                    <span style="font-weight: bold; color: #2e7d32;">
-                        🛒 В корзине: <?= $cartItemsCount ?> товар(ов) на сумму <?= number_format($cartTotalPrice, 2, '.', ' ') ?> ₽
-                    </span>
-                <a href="/cart" class="cart-link" style="background-color: #4caf50;">Перейти в корзину →</a>
-            </div>
-        <?php else: ?>
-            <div class="cart-info cart-info-empty">
-                    <span style="font-weight: bold; color: #ef6c00;">
-                        🛒 Ваша корзина пуста
-                    </span>
-                <a href="#products" class="cart-link" style="background-color: #ff9800;">Выберите товары ↓</a>
-            </div>
-        <?php endif; ?>
-    <?php else: ?>
-        <div class="cart-info guest">
-                <span style="font-weight: bold; color: #616161;">
-                    🔐 Авторизуйтесь для добавления товаров в корзину
+        <div class="cart-info <?= $cartItemsCount > 0 ? 'cart-info-user' : 'cart-info-empty' ?>" id="cart-info-block">
+            <?php if ($cartItemsCount > 0): ?>
+                <span style="font-weight: bold; color: #2e7d32;">
+                    🛒 В корзине: <span class="cart-count"><?= $cartItemsCount ?></span> товар(ов) на сумму <span class="cart-total"><?= number_format($cartTotalPrice, 2, '.', ' ') ?></span> ₽
                 </span>
+                <a href="/cart" class="cart-link" style="background-color: #4caf50;">Перейти в корзину →</a>
+            <?php else: ?>
+                <span style="font-weight: bold; color: #ef6c00;">
+                    🛒 Ваша корзина пуста
+                </span>
+                <a href="#products" class="cart-link" style="background-color: #ff9800;">Выберите товары ↓</a>
+            <?php endif; ?>
+        </div>
+    <?php else: ?>
+        <div class="cart-info">
+            <span style="font-weight: bold; color: #616161;">
+                🔐 Авторизуйтесь для добавления товаров в корзину
+            </span>
             <a href="/login" class="cart-link" style="background-color: #2196f3;">Войти в систему</a>
         </div>
     <?php endif; ?>
@@ -371,14 +409,14 @@
     <?php if (isset($_SESSION['userId'])): ?>
         <div class="add-product-form">
             <h4>➕ Быстрое добавление в корзину</h4>
-            <form action="/add-product" method="POST">
+            <form class="ajax-add-to-cart" action="/api/cart/add" method="POST">
                 <div class="input-container">
                     <span class="icon">🆔</span>
-                    <input class="input-field" type="text" placeholder="ID товара" name="product-id" required>
+                    <input class="input-field" type="text" placeholder="ID товара" name="product_id" required>
                 </div>
                 <div class="input-container">
                     <span class="icon">🔢</span>
-                    <input class="input-field" type="number" placeholder="Количество" name="amount" required min="1">
+                    <input class="input-field" type="number" placeholder="Количество" name="amount" required min="1" value="1">
                 </div>
                 <button type="submit" class="btn">➕ Добавить в корзину</button>
             </form>
@@ -389,8 +427,18 @@
 
     <div class="products-grid">
         <?php foreach ($products as $product): ?>
-            <div class="product-card">
-                <!-- БЛОК С КАРТИНКОЙ -->
+            <?php
+            $inCart = false;
+            $cartAmount = 0;
+            foreach ($cartItems as $cartItem) {
+                if ($cartItem['product']->getId() == $product->getId()) {
+                    $inCart = true;
+                    $cartAmount = $cartItem['amount'];
+                    break;
+                }
+            }
+            ?>
+            <div class="product-card" data-product-id="<?= $product->getId() ?>">
                 <div class="product-image-container">
                     <a href="/product?id=<?= $product->getId() ?>">
                         <img src="<?= htmlspecialchars($product->getImageUrl()) ?>"
@@ -415,36 +463,19 @@
                     <div class="product-price"><?= number_format($product->getPrice(), 2, '.', ' ') ?> ₽</div>
 
                     <?php if (isset($_SESSION['userId'])): ?>
-                        <?php
-                        $inCart = false;
-                        $cartAmount = 0;
-                        foreach ($cartItems as $cartItem) {
-                            if ($cartItem['product']->getId() == $product->getId()) {
-                                $inCart = true;
-                                $cartAmount = $cartItem['amount'];
-                                break;
-                            }
-                        }
-                        ?>
                         <div class="product-actions">
                             <?php if ($inCart && $cartAmount > 0): ?>
                                 <div class="cart-control">
-                                    <form action="/cart/decrease" method="POST">
-                                        <input type="hidden" name="product_id" value="<?= $product->getId() ?>">
-                                        <button type="submit" class="btn btn-red btn-sm">−</button>
-                                    </form>
+                                    <button type="button" class="btn btn-red btn-sm ajax-decrease" data-product-id="<?= $product->getId() ?>">−</button>
                                     <span class="cart-amount"><?= $cartAmount ?></span>
-                                    <form action="/cart/increase" method="POST">
-                                        <input type="hidden" name="product_id" value="<?= $product->getId() ?>">
-                                        <button type="submit" class="btn btn-green btn-sm">+</button>
-                                    </form>
+                                    <button type="button" class="btn btn-green btn-sm ajax-increase" data-product-id="<?= $product->getId() ?>">+</button>
+                                    <button type="button" class="btn btn-red btn-sm ajax-remove" data-product-id="<?= $product->getId() ?>" style="background-color: #e74c3c;">🗑️</button>
                                 </div>
                             <?php else: ?>
-                                <form action="/add-product" method="POST">
-                                    <input type="hidden" name="product-id" value="<?= $product->getId() ?>">
+                                <form class="ajax-add-to-cart add-form" action="/api/cart/add" method="POST">
+                                    <input type="hidden" name="product_id" value="<?= $product->getId() ?>">
                                     <div style="display: flex; gap: 5px;">
-                                        <input type="number" name="amount" value="1" min="1"
-                                               style="width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
+                                        <input type="number" name="amount" value="1" min="1" style="width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
                                         <button type="submit" class="btn btn-green btn-sm">➕ Добавить</button>
                                     </div>
                                 </form>
@@ -467,5 +498,31 @@
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+    $(document).ready(function() {
+        // Добавление в корзину через AJAX
+        $('.ajax-add-to-cart').submit(function(e) {
+            e.preventDefault();
+
+            var form = $(this);
+
+            $.ajax({
+                type: "POST",
+                url: "/api/cart/add",
+                data: form.serialize(),
+                dataType: 'json',
+                success: function(response) {
+                    // Обновляем количество товаров в бейдже корзины
+                    $(".badge").text(response.cart_count);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Ошибка при добавлении товара:', error);
+                }
+            });
+        });
+    });
+</script>
+
 </body>
 </html>
