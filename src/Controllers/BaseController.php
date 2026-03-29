@@ -17,6 +17,8 @@ abstract class BaseController
         $this->auth = new SessionAuthService();
         $this->logger = new LoggerService();
     }
+
+    // Тут был Алдар
 }
 
 /** Заменить на запись в БД:
