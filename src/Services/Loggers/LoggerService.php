@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Services\Loggers;
 
 class LoggerService implements LoggerInterface

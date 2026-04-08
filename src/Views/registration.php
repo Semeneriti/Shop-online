@@ -1,132 +1,27 @@
 <?php
-/** @var array $errors */
 ?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            padding: 20px;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .container {
-            max-width: 500px;
-            width: 100%;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 30px;
-        }
-
-        h2 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 25px;
-            font-size: 24px;
-        }
-
-        .error-box {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            border: 1px solid #f5c6cb;
-        }
-
-        .error-box p {
-            margin: 5px 0;
-        }
-
-        .input-container {
-            display: flex;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .icon {
-            padding: 12px;
-            background: #3498db;
-            color: white;
-            min-width: 50px;
-            text-align: center;
-            border-radius: 4px 0 0 4px;
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-left: none;
-            border-radius: 0 4px 4px 0;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        .input-field:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 0 2px rgba(52,152,219,0.1);
-        }
-
-        .btn {
-            background-color: #3498db;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-            transition: background-color 0.3s;
-            margin-top: 10px;
-        }
-
-        .btn:hover {
-            background-color: #2980b9;
-        }
-
-        .login-link {
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-        }
-
-        .login-link a {
-            color: #3498db;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .login-link a:hover {
-            text-decoration: underline;
-        }
-
-        .field-error {
-            color: #e74c3c;
-            font-size: 12px;
-            margin-top: 5px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f5f5f5; font-family: Arial, sans-serif; }
+        .container { background: white; border-radius: 12px; padding: 40px; width: 100%; max-width: 500px; }
+        h2 { text-align: center; margin-bottom: 25px; }
+        .error-box { background: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 20px; }
+        .input-container { display: flex; margin-bottom: 15px; }
+        .icon { padding: 12px; background: #3498db; color: white; min-width: 50px; text-align: center; border-radius: 4px 0 0 4px; }
+        .input-field { width: 100%; padding: 12px; border: 1px solid #ddd; border-left: none; border-radius: 0 4px 4px 0; }
+        .btn { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .btn:hover { background: #2980b9; }
+        .login-link { text-align: center; margin-top: 20px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>📝 Регистрация</h2>
+    <h2>Регистрация</h2>
 
     <?php if (!empty($errors)): ?>
         <div class="error-box">
@@ -136,24 +31,24 @@
         </div>
     <?php endif; ?>
 
-    <form action="/registration" method="POST">
+    <form method="POST">
         <div class="input-container">
-            <i class="fa fa-user icon">👤</i>
-            <input class="input-field" type="text" placeholder="Имя пользователя" name="name" required>
+            <span class="icon">👤</span>
+            <input class="input-field" type="text" placeholder="Имя" name="name" required>
         </div>
 
         <div class="input-container">
-            <i class="fa fa-envelope icon">📧</i>
+            <span class="icon">📧</span>
             <input class="input-field" type="email" placeholder="Email" name="email" required>
         </div>
 
         <div class="input-container">
-            <i class="fa fa-key icon">🔑</i>
+            <span class="icon">🔑</span>
             <input class="input-field" type="password" placeholder="Пароль" name="password" required>
         </div>
 
         <div class="input-container">
-            <i class="fa fa-key icon">🔑</i>
+            <span class="icon">🔑</span>
             <input class="input-field" type="password" placeholder="Повторите пароль" name="passwordRepeat" required>
         </div>
 

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Services;
 
 use Models\Order;
@@ -7,12 +10,22 @@ use DTO\OrderCreateDto;
 
 class OrderService
 {
+    private const MIN_ORDER_TOTAL = 100;
+
     public function createOrderFromCart(int $userId, array $orderData): ?Order
     {
         $cart = new Cart($userId);
 
         if ($cart->isEmpty()) {
             throw new \RuntimeException("Корзина пуста");
+        }
+
+        $cartTotal = $cart->getTotalPrice();
+
+        if ($cartTotal <= self::MIN_ORDER_TOTAL) {
+            throw new \RuntimeException(
+                "Сумма заказа должна быть более " . self::MIN_ORDER_TOTAL . " рублей. Сейчас: " . $cartTotal . " руб."
+            );
         }
 
         $checkoutData = $cart->checkout();
@@ -46,22 +59,5 @@ class OrderService
             return [];
         }
         return $order->getDetails();
-    }
-
-    public function validateOrderData(array $data): array
-    {
-        $errors = [];
-
-        if (empty($data['address'])) {
-            $errors['address'] = 'Укажите адрес доставки';
-        }
-
-        if (empty($data['phone'])) {
-            $errors['phone'] = 'Укажите номер телефона';
-        } elseif (!preg_match('/^\+?[1-9]\d{1,14}$/', $data['phone'])) {
-            $errors['phone'] = 'Неверный формат номера телефона';
-        }
-
-        return $errors;
     }
 }

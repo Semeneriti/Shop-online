@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Models;
 
 use DTO\OrderCreateDto;
@@ -46,15 +49,50 @@ class Order extends Model
         return 'orders';
     }
 
-    public function getId(): ?int { return $this->id; }
-    public function getUserId(): int { return $this->userId; }
-    public function getAddress(): string { return $this->address; }
-    public function getPhone(): string { return $this->phone; }
-    public function getComment(): ?string { return $this->comment; }
-    public function getTotalPrice(): float { return $this->totalPrice; }
-    public function getStatus(): string { return $this->status; }
-    public function getCreatedAt(): \DateTime { return $this->createdAt; }
-    public function getUpdatedAt(): \DateTime { return $this->updatedAt; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getUserId(): int
+    {
+        return $this->userId;
+    }
+
+    public function getAddress(): string
+    {
+        return $this->address;
+    }
+
+    public function getPhone(): string
+    {
+        return $this->phone;
+    }
+
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+
+    public function getTotalPrice(): float
+    {
+        return $this->totalPrice;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function getCreatedAt(): \DateTime
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): \DateTime
+    {
+        return $this->updatedAt;
+    }
 
     public function getItems(): array
     {

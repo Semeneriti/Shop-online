@@ -1,5 +1,4 @@
 <?php
-/** @var array $cartData */
 $cartItems = $cartData['items'] ?? [];
 $totalPrice = $cartData['total_price'] ?? 0;
 ?>
@@ -7,318 +6,101 @@ $totalPrice = $cartData['total_price'] ?? 0;
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Корзина</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 30px;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 25px;
-            font-size: 28px;
-        }
-
-        .success-message {
-            background-color: #d4edda;
-            color: #155724;
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            border: 1px solid #c3e6cb;
-        }
-
-        .error-message {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            border: 1px solid #f5c6cb;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 25px;
-        }
-
-        th {
-            background-color: #f8f9fa;
-            color: #555;
-            font-weight: 600;
-            padding: 12px;
-            text-align: left;
-            border-bottom: 2px solid #dee2e6;
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #dee2e6;
-            color: #666;
-        }
-
-        tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        .total-row td {
-            font-weight: bold;
-            color: #2c3e50;
-            font-size: 16px;
-            border-top: 2px solid #dee2e6;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
-
-        .btn:hover {
-            background-color: #2980b9;
-        }
-
-        .btn-green {
-            background-color: #27ae60;
-        }
-
-        .btn-green:hover {
-            background-color: #229954;
-        }
-
-        .btn-red {
-            background-color: #e74c3c;
-        }
-
-        .btn-red:hover {
-            background-color: #c0392b;
-        }
-
-        .btn-clear {
-            background-color: #e74c3c;
-            color: white;
-            padding: 8px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
-
-        .btn-clear:hover {
-            background-color: #c0392b;
-        }
-
-        .empty-cart {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-            font-style: italic;
-        }
-
-        .actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .actions-left {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .checkout-link {
-            display: inline-block;
-            padding: 12px 30px;
-            background-color: #27ae60;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-
-        .checkout-link:hover {
-            background-color: #229954;
-        }
-
-        .continue-link {
-            color: #3498db;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .continue-link:hover {
-            text-decoration: underline;
-        }
-
-        .quantity-control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .quantity-form {
-            display: inline;
-        }
-
-        .quantity-btn {
-            padding: 5px 10px;
-            font-size: 14px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 8px; padding: 30px; }
+        h1 { margin-bottom: 25px; }
+        .success-message { background: #d4edda; color: #155724; padding: 12px; border-radius: 4px; margin-bottom: 20px; }
+        .error-message { background: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; }
+        td { padding: 12px; border-bottom: 1px solid #dee2e6; }
+        .total-row td { font-weight: bold; border-top: 2px solid #dee2e6; }
+        .btn { display: inline-block; padding: 10px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 4px; border: none; cursor: pointer; }
+        .btn:hover { background: #2980b9; }
+        .btn-red { background: #e74c3c; }
+        .btn-red:hover { background: #c0392b; }
+        .btn-green { background: #27ae60; }
+        .btn-green:hover { background: #229954; }
+        .quantity-control { display: flex; align-items: center; gap: 10px; }
+        .quantity-form { display: inline; }
+        .actions { display: flex; justify-content: space-between; margin-top: 20px; }
+        .checkout-link { background: #27ae60; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; }
+        .empty-cart { text-align: center; padding: 40px; color: #999; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>🛒 Моя корзина</h1>
+    <h1>Корзина</h1>
 
-    <?php
-    $successMessage = $_SESSION['success_message'] ?? '';
-    $errorMessage = $_SESSION['error_message'] ?? '';
-
-    if ($successMessage):
-        unset($_SESSION['success_message']);
-        ?>
+    <?php if ($successMessage): ?>
         <div class="success-message"><?= htmlspecialchars($successMessage) ?></div>
     <?php endif; ?>
 
-    <?php if ($errorMessage):
-        unset($_SESSION['error_message']);
-        ?>
+    <?php if ($errorMessage): ?>
         <div class="error-message"><?= htmlspecialchars($errorMessage) ?></div>
     <?php endif; ?>
 
     <?php if (!empty($cartItems)): ?>
         <table>
             <thead>
-            <tr>
-                <th>Товар</th>
-                <th>Цена</th>
-                <th>Количество</th>
-                <th>Сумма</th>
-                <th>Действие</th>
-            </tr>
+            <tr><th>Товар</th><th>Цена</th><th>Количество</th><th>Сумма</th><th></th></tr>
             </thead>
             <tbody>
             <?php foreach ($cartItems as $item): ?>
                 <?php
-                // Инициализируем переменные значениями по умолчанию
-                $product = null;
-                $amount = 1;
-                $subtotal = 0;
+                $product = $item['product'];
+                $amount = $item['amount'];
 
-                // Пытаемся извлечь данные из разных форматов
-                if (is_object($item)) {
-                    if (isset($item->product) && is_object($item->product)) {
-                        // Объект со свойством product
-                        $product = $item->product;
-                        $amount = $item->amount ?? 1;
-                    } elseif (method_exists($item, 'getName')) {
-                        // Прямой объект Product
-                        $product = $item;
-                    }
-                } elseif (is_array($item)) {
-                    if (isset($item['product']) && is_object($item['product'])) {
-                        // Массив с ключом 'product'
-                        $product = $item['product'];
-                        $amount = $item['amount'] ?? 1;
-                    } elseif (isset($item['name'])) {
-                        // Массив с данными товара
-                        $product = (object)$item; // Преобразуем в объект
-                    }
-                }
-
-                // Если не удалось получить продукт, пропускаем итерацию
-                if (!$product || !method_exists($product, 'getName')) {
-                    continue;
-                }
-
-                // Вычисляем subtotal если не задан
-                if (!isset($subtotal) || $subtotal == 0) {
-                    $subtotal = $product->getPrice() * $amount;
+                if (is_array($product)) {
+                    $productName = $product['name'] ?? 'Товар';
+                    $productPrice = $product['price'] ?? 0;
+                    $productId = $product['id'] ?? 0;
+                } else {
+                    $productName = $product->getName();
+                    $productPrice = $product->getPrice();
+                    $productId = $product->getId();
                 }
                 ?>
                 <tr>
-                    <td>
-                        <strong><?= htmlspecialchars($product->getName()) ?></strong>
-                    </td>
-                    <td><?= number_format($product->getPrice(), 2, '.', ' ') ?> ₽</td>
+                    <td><strong><?= htmlspecialchars($productName) ?></strong></td>
+                    <td><?= number_format($productPrice, 2, '.', ' ') ?> ₽</td>
                     <td>
                         <div class="quantity-control">
                             <form action="/cart/decrease" method="POST" class="quantity-form">
-                                <input type="hidden" name="product_id" value="<?= $product->getId() ?>">
-                                <button type="submit" class="btn btn-red quantity-btn">−</button>
+                                <input type="hidden" name="product_id" value="<?= $productId ?>">
+                                <button type="submit" class="btn btn-red">-</button>
                             </form>
-                            <span style="font-weight: bold;"><?= $amount ?></span>
+                            <span><?= $amount ?></span>
                             <form action="/cart/increase" method="POST" class="quantity-form">
-                                <input type="hidden" name="product_id" value="<?= $product->getId() ?>">
-                                <button type="submit" class="btn btn-green quantity-btn">+</button>
+                                <input type="hidden" name="product_id" value="<?= $productId ?>">
+                                <button type="submit" class="btn btn-green">+</button>
                             </form>
                         </div>
                     </td>
-                    <td><strong><?= number_format($subtotal, 2, '.', ' ') ?> ₽</strong></td>
+                    <td><strong><?= number_format($productPrice * $amount, 2, '.', ' ') ?> ₽</strong></td>
                     <td>
                         <form action="/cart/remove" method="POST">
-                            <input type="hidden" name="product_id" value="<?= $product->getId() ?>">
+                            <input type="hidden" name="product_id" value="<?= $productId ?>">
                             <button type="submit" class="btn btn-red">Удалить</button>
                         </form>
                     </td>
                 </tr>
             <?php endforeach; ?>
-            <tr class="total-row">
-                <td colspan="3" style="text-align: right;"><strong>Итого:</strong></td>
-                <td><strong><?= number_format($totalPrice, 2, '.', ' ') ?> ₽</strong></td>
-                <td></td>
-            </tr>
+            <tr class="total-row"><td colspan="3"><strong>Итого:</strong></td><td><strong><?= number_format($totalPrice, 2, '.', ' ') ?> ₽</strong></td><td></td></tr>
             </tbody>
         </table>
-
         <div class="actions">
-            <div class="actions-left">
-                <a href="/catalog" class="continue-link">← Продолжить покупки</a>
-                <form action="/cart/clear" method="POST" style="display: inline;" onsubmit="return confirm('Вы уверены, что хотите очистить корзину?');">
-                    <button type="submit" class="btn-clear">🗑️ Очистить корзину</button>
-                </form>
-            </div>
-            <a href="/checkout" class="checkout-link">✅ Оформить заказ</a>
+            <a href="/catalog">Продолжить покупки</a>
+            <form action="/cart/clear" method="POST" onsubmit="return confirm('Очистить корзину?');">
+                <button type="submit" class="btn btn-red">Очистить корзину</button>
+            </form>
+            <a href="/checkout" class="checkout-link">Оформить заказ</a>
         </div>
     <?php else: ?>
-        <div class="empty-cart">
-            <p style="font-size: 18px; margin-bottom: 20px;">Ваша корзина пуста</p>
-            <p style="margin-bottom: 30px;">Добавьте товары из каталога</p>
-            <a href="/catalog" class="btn">Перейти в каталог</a>
-        </div>
+        <div class="empty-cart"><p>Корзина пуста</p><a href="/catalog" class="btn">Перейти в каталог</a></div>
     <?php endif; ?>
 </div>
 </body>

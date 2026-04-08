@@ -1,33 +1,21 @@
 <!DOCTYPE html>
-<html lang="en" >
-
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>market-wp.com</title>
-
+    <meta charset="UTF-8">
+    <title>404 - Страница не найдена</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
-
 </head>
-
 <body>
-
-  <div id='oopss'>
+<div id='oopss'>
     <div id='error-text'>
         <img src="https://cdn.rawgit.com/ahmedhosna95/upload/1731955f/sad404.svg" alt="404">
         <span>404 PAGE</span>
-        <p class="p-a">
-           . The page you were looking for could not be found</p>
-        <p class="p-b">
-            ... Back to previous page
-</p>
+        <p class="p-a">The page you were looking for could not be found</p>
+        <p class="p-b">... Back to previous page</p>
         <a href='#' class="back">... Back to previous page</a>
     </div>
 </div>
-
-
-
 </body>
-
 </html>
 
 <style>
@@ -84,7 +72,6 @@
         transform: translateY(-13px);
         box-shadow: 0 35px 90px 4px rgba(0, 0, 0, 0.3), inset 0px 0 0 3px #000;
     }
-
     @font-face {
         font-family: Shabnam;
         src: url("https://cdn.rawgit.com/ahmedhosna95/upload/ba6564f8/fonts/Shabnam/Shabnam-Bold.eot");
@@ -97,5 +84,4 @@
         src: url("https://cdn.rawgit.com/ahmedhosna95/upload/ba6564f8/fonts/Shabnam/Shabnam.eot?#iefix") format("embedded-opentype"), url("https://cdn.rawgit.com/ahmedhosna95/upload/ba6564f8/fonts/Shabnam/Shabnam.woff") format("woff"), url("https://cdn.rawgit.com/ahmedhosna95/upload/ba6564f8/fonts/Shabnam/Shabnam.woff2") format("woff2"), url("https://cdn.rawgit.com/ahmedhosna95/upload/ba6564f8/fonts/Shabnam/Shabnam.ttf") format("truetype");
         font-weight: normal;
     }
-
 </style>

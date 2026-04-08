@@ -1,5 +1,7 @@
 <?php
-// /var/www/html/src/Request/Request.php
+
+declare(strict_types=1);
+
 namespace Request;
 
 abstract class Request

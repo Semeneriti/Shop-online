@@ -1,8 +1,10 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Services;
 
 use DTO\AddToCartDto;
-use DTO\CartItemDto;
 use Models\Cart;
 
 class CartService
@@ -54,7 +56,7 @@ class CartService
         return $cart->getTotalAmount();
     }
 
-    public function isCartEmpty(int $userId): bool
+    public function isEmpty(int $userId): bool
     {
         $cart = new Cart($userId);
         return $cart->isEmpty();
@@ -75,20 +77,5 @@ class CartService
             }
         }
         return 0;
-    }
-
-    public function validateAddToCartData(array $data): array
-    {
-        $errors = [];
-
-        if (empty($data['product-id']) || $data['product-id'] <= 0) {
-            $errors['product-id'] = 'Укажите корректный ID товара';
-        }
-
-        if (empty($data['amount']) || $data['amount'] <= 0) {
-            $errors['amount'] = 'Укажите корректное количество';
-        }
-
-        return $errors;
     }
 }

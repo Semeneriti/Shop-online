@@ -1,9 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Services\Loggers;
 
 use PDO;
 
-class DatabaseLogger implements LoggerInterface
+class DataBaseLogger implements LoggerInterface
 {
     private PDO $pdo;
 

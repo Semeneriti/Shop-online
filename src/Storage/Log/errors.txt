@@ -69,3 +69,131 @@
 [2026-03-28 05:00:51] [ERROR] Страница не найдена: /images/no-image.png | url: /images/no-image.png, method: GET, code: 404
 [2026-03-28 05:00:51] [ERROR] Страница не найдена: /images/no-image.png | url: /images/no-image.png, method: GET, code: 404
 [2026-03-28 05:03:22] [ERROR] Страница не найдена: /images/no-image.png | url: /images/no-image.png, method: GET, code: 404
+[2026-04-08 05:24:56] [ERROR] Страница не найдена: /favicon.ico | url: /favicon.ico, method: GET, code: 404
+[2026-04-25 16:16:36] [ERROR] Страница не найдена: /favicon.ico | url: /favicon.ico, method: GET, code: 404
+[2026-04-25 16:18:44] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:18:45] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:18:55] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:18:56] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:18:57] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:02] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:03] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:03] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:03] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:03] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:03] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:04] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:04] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:04] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:04] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:04] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:06] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:07] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:07] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:07] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:19] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:19:47] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:22:46] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:22:56] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:23:06] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:25:10] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:25:19] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:26:09] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:26:24] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:26:32] [ERROR] Страница не найдена: /.well-known/appspecific/com.chrome.devtools.json | url: /.well-known/appspecific/com.chrome.devtools.json, method: GET, code: 404
+[2026-04-25 16:26:43] [ERROR] Страница не найдена: /.well-known/appspecific/com.chrome.devtools.json | url: /.well-known/appspecific/com.chrome.devtools.json, method: GET, code: 404
+[2026-04-25 16:26:50] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:27:05] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:27:57] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:28:02] [ERROR] Too few arguments to function Controllers\ProductController::ajaxAddToCart(), 0 passed in /var/www/html/src/Core/App.php on line 84 and exactly 1 expected | url: /api/cart/add, method: POST, controller: Controllers\ProductController, action: ajaxAddToCart, file: /var/www/html/src/Controllers/ProductController.php, line: 30, trace: #0 /var/www/html/src/Core/App.php(84): Controllers\ProductController->ajaxAddToCart()
+#1 /var/www/html/src/public/index.php(48): Core\App->run()
+#2 {main}
+[2026-04-25 16:31:23] [ERROR] Страница не найдена: /.well-known/appspecific/com.chrome.devtools.json | url: /.well-known/appspecific/com.chrome.devtools.json, method: GET, code: 404
+[2026-04-25 16:31:30] [ERROR] Call to a member function getName() on array | url: /cart, method: GET, controller: Controllers\CartController, action: showCart, file: /var/www/html/src/Views/cart.php, line: 55, trace: #0 /var/www/html/src/Controllers/Controller.php(27): require_once()
+#1 /var/www/html/src/Controllers/CartController.php(35): Controllers\Controller->render('cart', Array)
+#2 /var/www/html/src/Core/App.php(84): Controllers\CartController->showCart()
+#3 /var/www/html/src/public/index.php(48): Core\App->run()
+#4 {main}
+[2026-04-25 16:31:30] [ERROR] Страница не найдена: /.well-known/appspecific/com.chrome.devtools.json | url: /.well-known/appspecific/com.chrome.devtools.json, method: GET, code: 404
+[2026-04-25 16:31:34] [ERROR] Call to a member function getName() on array | url: /cart, method: GET, controller: Controllers\CartController, action: showCart, file: /var/www/html/src/Views/cart.php, line: 55, trace: #0 /var/www/html/src/Controllers/Controller.php(27): require_once()
+#1 /var/www/html/src/Controllers/CartController.php(35): Controllers\Controller->render('cart', Array)
+#2 /var/www/html/src/Core/App.php(84): Controllers\CartController->showCart()
+#3 /var/www/html/src/public/index.php(48): Core\App->run()
+#4 {main}
+[2026-04-25 16:31:34] [ERROR] Страница не найдена: /.well-known/appspecific/com.chrome.devtools.json | url: /.well-known/appspecific/com.chrome.devtools.json, method: GET, code: 404
+[2026-04-25 16:31:40] [ERROR] Страница не найдена: / | url: /, method: GET, code: 404
+[2026-04-25 16:31:40] [ERROR] Страница не найдена: /.well-known/appspecific/com.chrome.devtools.json | url: /.well-known/appspecific/com.chrome.devtools.json, method: GET, code: 404
+[2026-04-25 16:31:43] [ERROR] Страница не найдена: /.well-known/appspecific/com.chrome.devtools.json | url: /.well-known/appspecific/com.chrome.devtools.json, method: GET, code: 404
+[2026-04-25 16:31:43] [ERROR] Страница не найдена: /.well-known/appspecific/com.chrome.devtools.json | url: /.well-known/appspecific/com.chrome.devtools.json, method: GET, code: 404
+[2026-04-25 16:31:46] [ERROR] Страница не найдена: /.well-known/appspecific/com.chrome.devtools.json | url: /.well-known/appspecific/com.chrome.devtools.json, method: GET, code: 404
+[2026-04-25 16:32:17] [ERROR] Call to a member function getName() on array | url: /cart, method: GET, controller: Controllers\CartController, action: showCart, file: /var/www/html/src/Views/cart.php, line: 55, trace: #0 /var/www/html/src/Controllers/Controller.php(27): require_once()
+#1 /var/www/html/src/Controllers/CartController.php(35): Controllers\Controller->render('cart', Array)
+#2 /var/www/html/src/Core/App.php(84): Controllers\CartController->showCart()
+#3 /var/www/html/src/public/index.php(48): Core\App->run()
+#4 {main}
+[2026-04-25 16:32:17] [ERROR] Страница не найдена: /.well-known/appspecific/com.chrome.devtools.json | url: /.well-known/appspecific/com.chrome.devtools.json, method: GET, code: 404
+[2026-04-25 16:34:15] [ERROR] Страница не найдена: /.well-known/appspecific/com.chrome.devtools.json | url: /.well-known/appspecific/com.chrome.devtools.json, method: GET, code: 404

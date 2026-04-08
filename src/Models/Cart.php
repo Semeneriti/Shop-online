@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Models;
 
 class Cart extends Model
@@ -156,9 +159,6 @@ class Cart extends Model
         return empty($this->items);
     }
 
-    /**
-     * Загружает товары пользователя из базы данных с использованием JOIN
-     */
     private function loadItems(): void
     {
         $this->items = [];
