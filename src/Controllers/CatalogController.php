@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Controllers;
 
 // Импортируем необходимые классы
@@ -9,7 +12,7 @@ use Services\CartService;
 // Сервис корзины - для получения информации о корзине пользователя
 
 // Контроллер каталога товаров - наследуется от BaseController
-class CatalogController extends BaseController
+class CatalogController extends Controller
 {
     // Свойство для хранения сервиса корзины
     private CartService $cartService;

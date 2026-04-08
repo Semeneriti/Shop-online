@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 // /var/www/html/src/Request/Request.php
 namespace Request;
 

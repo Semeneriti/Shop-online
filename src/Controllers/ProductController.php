@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Controllers;
 
 use Models\Product;
@@ -7,7 +10,7 @@ use Services\CartService;
 use Request\AddProductRequest;
 use DTO\AddToCartDto;
 
-class ProductController extends BaseController
+class ProductController extends Controller
 {
     private CartService $cartService;
 

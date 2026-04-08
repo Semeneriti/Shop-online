@@ -69,3 +69,4 @@
 [2026-03-28 05:00:51] [ERROR] Страница не найдена: /images/no-image.png | url: /images/no-image.png, method: GET, code: 404
 [2026-03-28 05:00:51] [ERROR] Страница не найдена: /images/no-image.png | url: /images/no-image.png, method: GET, code: 404
 [2026-03-28 05:03:22] [ERROR] Страница не найдена: /images/no-image.png | url: /images/no-image.png, method: GET, code: 404
+[2026-04-08 05:24:56] [ERROR] Страница не найдена: /favicon.ico | url: /favicon.ico, method: GET, code: 404

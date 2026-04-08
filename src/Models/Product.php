@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace Models; // Модель - класс для работы с данными в базе данных
 
 // Класс Product - модель товара, наследуется от Model

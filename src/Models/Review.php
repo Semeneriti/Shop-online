@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Models; // Модель - класс для работы с данными в базе данных
 
 // Класс Review - модель отзыва, наследуется от Model

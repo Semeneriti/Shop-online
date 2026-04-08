@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Services\Auth; // Пространство имен для сервисов
 
 use Models\User;

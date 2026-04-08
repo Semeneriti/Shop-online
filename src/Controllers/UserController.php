@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Controllers;
 
 use Models\User;
@@ -8,7 +11,7 @@ use Request\RegisterRequest;
 use Request\LoginRequest;
 use Request\UpdateProfileRequest;
 
-class UserController extends BaseController
+class UserController extends Controller
 {
     private CartService $cartService;
     private OrderService $orderService;

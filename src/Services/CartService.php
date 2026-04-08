@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Services;
 
 use DTO\AddToCartDto;
@@ -54,7 +57,7 @@ class CartService
         return $cart->getTotalAmount();
     }
 
-    public function isCartEmpty(int $userId): bool
+    public function isEmpty($userId): bool
     {
         $cart = new Cart($userId);
         return $cart->isEmpty();

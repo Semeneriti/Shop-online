@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Models; // Модели - классы для работы с таблицами в базе данных
 
 // Абстрактный класс Model - родитель для всех моделей (Product, User, Order и т.д.)

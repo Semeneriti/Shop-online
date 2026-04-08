@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 // DTO - Data Transfer Object (Объект передачи данных)
 // Используется для передачи данных между слоями приложения
 namespace DTO;

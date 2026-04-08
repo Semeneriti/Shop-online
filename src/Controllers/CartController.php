@@ -1,12 +1,18 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Controllers;
 
 use Request\UpdateCartRequest;
+use Request\CheckoutRequest;
 use Services\CartService;
 use Services\OrderService;
 
-class CartController extends BaseController
+class CartController extends Controller
 {
+    private const MIN_ORDER_TOTAL = 100;
+
     private CartService $cartService;
     private OrderService $orderService;
 
@@ -17,26 +23,27 @@ class CartController extends BaseController
         $this->orderService = new OrderService();
     }
 
-    public function showCart(): void
+    public function show(): void
     {
         $this->auth->requireAuth();
-        $cartData = $this->cartService->getCartData($this->auth->getUserId());
 
+        $cartData = $this->cartService->getCartData($this->auth->getUserId());
         $successMessage = $this->auth->getSessionValue('success_message');
         $errorMessage = $this->auth->getSessionValue('error_message');
 
         $this->auth->unsetSessionValue('success_message');
         $this->auth->unsetSessionValue('error_message');
 
-        require_once __DIR__ . '/../Views/cart.php';
+        $this->render('cart', compact('cartData', 'successMessage', 'errorMessage'));
     }
 
     public function showCheckout(): void
     {
         $this->auth->requireAuth();
 
-        if ($this->cartService->isCartEmpty($this->auth->getUserId())) {
+        if ($this->cartService->isEmpty($this->auth->getUserId())) {
             $this->auth->redirect("/cart");
+            return;
         }
 
         $cartData = $this->cartService->getCartData($this->auth->getUserId());
@@ -46,40 +53,33 @@ class CartController extends BaseController
         $this->auth->unsetSessionValue('checkout_errors');
         $this->auth->unsetSessionValue('checkout_data');
 
-        require_once __DIR__ . '/../Views/checkout.php';
+        $this->render('checkout', compact('cartData', 'errors', 'formData'));
     }
 
-    public function processCheckout(): void
+    public function processCheckout(CheckoutRequest $request): void
     {
         if (!$this->auth->isPostRequest()) {
             $this->auth->redirect("/checkout");
+            return;
         }
 
         $this->auth->requireAuth();
 
-        $address = $this->auth->getPostString('address');
-        $phone = $this->auth->getPostString('phone');
-        $comment = $this->auth->getPostString('comment');
-
-        $orderData = [
-            'address' => $address,
-            'phone' => $phone,
-            'comment' => $comment
-        ];
-
-        $errors = $this->orderService->validateOrderData($orderData);
+        $errors = $request->getErrors();
+        $orderData = $request->getOrderData();
 
         if (!empty($errors)) {
             $this->auth->setSessionValue('checkout_errors', $errors);
             $this->auth->setSessionValue('checkout_data', $orderData);
             $this->auth->redirect("/checkout");
+            return;
         }
 
         $userId = $this->auth->getUserId();
         $cartTotal = $this->cartService->getCartTotalPrice($userId);
 
-        if ($cartTotal <= 100) {
-            $errors['total'] = "Сумма заказа должна быть более 100 рублей. Сейчас: " . $cartTotal . " руб.";
+        if ($cartTotal <= self::MIN_ORDER_TOTAL) {
+            $errors['total'] = "Сумма заказа должна быть более " . self::MIN_ORDER_TOTAL . " рублей. Сейчас: " . $cartTotal . " руб.";
             $this->auth->setSessionValue('checkout_errors', $errors);
             $this->auth->setSessionValue('checkout_data', $orderData);
             $this->auth->redirect("/checkout");
@@ -89,19 +89,20 @@ class CartController extends BaseController
         try {
             $order = $this->orderService->createOrderFromCart($userId, $orderData);
 
-            if ($order == null) {
+            if ($order === null) {
                 throw new \Exception("Ошибка при создании заказа");
             }
 
             $this->auth->unsetSessionValue('checkout_errors');
             $this->auth->unsetSessionValue('checkout_data');
 
-            $orderDetails = $order->getDetails();
-            $address = $order->getAddress();
-            $phone = $order->getPhone();
-            $comment = $order->getComment();
-
-            require_once __DIR__ . '/../Views/order_success.php';
+            $this->render('order_success', [
+                'order' => $order,
+                'orderDetails' => $order->getDetails(),
+                'address' => $order->getAddress(),
+                'phone' => $order->getPhone(),
+                'comment' => $order->getComment()
+            ]);
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage(), [
                 'user_id' => $userId,
@@ -112,6 +113,7 @@ class CartController extends BaseController
             $errors['general'] = $e->getMessage();
             $this->auth->setSessionValue('checkout_errors', $errors);
             $this->auth->redirect("/checkout");
+            return;
         }
     }
 
@@ -119,6 +121,7 @@ class CartController extends BaseController
     {
         if (!$this->auth->isPostRequest()) {
             $this->auth->redirect("/cart");
+            return;
         }
 
         $this->auth->requireAuth();
@@ -139,21 +142,7 @@ class CartController extends BaseController
      */
     public function ajaxClearCart(): void
     {
-        header('Content-Type: application/json; charset=utf-8');
-
-        if ($this->auth->isGuest()) {
-            echo json_encode([
-                'success' => false,
-                'error' => 'Необходимо авторизоваться'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
-        }
-
-        if (!$this->auth->isPostRequest()) {
-            echo json_encode([
-                'success' => false,
-                'error' => 'Неверный метод запроса'
-            ], JSON_UNESCAPED_UNICODE);
+        if (!$this->validateAjaxRequest()) {
             return;
         }
 
@@ -162,58 +151,31 @@ class CartController extends BaseController
         try {
             $result = $this->cartService->clearCart($userId);
 
-            if ($result) {
-                echo json_encode([
-                    'success' => true,
-                    'cart_count' => 0,
-                    'cart_total' => 0,
-                    'is_empty' => true,
-                    'message' => 'Корзина успешно очищена'
-                ], JSON_UNESCAPED_UNICODE);
-            } else {
-                echo json_encode([
-                    'success' => false,
-                    'error' => 'Ошибка при очистке корзины'
-                ], JSON_UNESCAPED_UNICODE);
-            }
+            $this->jsonResponse([
+                'success' => $result,
+                'cart_count' => 0,
+                'cart_total' => 0,
+                'is_empty' => true,
+                'message' => $result ? 'Корзина успешно очищена' : 'Ошибка при очистке корзины'
+            ]);
         } catch (\Exception $e) {
-            echo json_encode([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            $this->jsonResponse(['success' => false, 'error' => $e->getMessage()]);
         }
     }
 
     /**
      * AJAX-метод для увеличения количества товара
      */
-    public function ajaxIncreaseProduct(): void
+    public function ajaxIncreaseProduct(UpdateCartRequest $request): void
     {
-        header('Content-Type: application/json; charset=utf-8');
-
-        if ($this->auth->isGuest()) {
-            echo json_encode([
-                'success' => false,
-                'error' => 'Необходимо авторизоваться'
-            ], JSON_UNESCAPED_UNICODE);
+        if (!$this->validateAjaxRequest()) {
             return;
         }
 
-        if (!$this->auth->isPostRequest()) {
-            echo json_encode([
-                'success' => false,
-                'error' => 'Неверный метод запроса'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
-        }
-
-        $productId = (int)($this->auth->getPostParam('product_id', 0));
+        $productId = $request->getProductId();
 
         if ($productId <= 0) {
-            echo json_encode([
-                'success' => false,
-                'error' => 'Неверный ID товара'
-            ], JSON_UNESCAPED_UNICODE);
+            $this->jsonResponse(['success' => false, 'error' => 'Неверный ID товара']);
             return;
         }
 
@@ -228,57 +190,34 @@ class CartController extends BaseController
                 $cartTotalAmount = $this->cartService->getCartTotalAmount($userId);
                 $cartTotalPrice = $this->cartService->getCartTotalPrice($userId);
 
-                echo json_encode([
+                $this->jsonResponse([
                     'success' => true,
                     'cart_count' => $cartTotalAmount,
                     'cart_total' => $cartTotalPrice,
                     'product_id' => $productId,
                     'new_amount' => $newAmount
-                ], JSON_UNESCAPED_UNICODE);
+                ]);
             } else {
-                echo json_encode([
-                    'success' => false,
-                    'error' => 'Ошибка при обновлении корзины'
-                ], JSON_UNESCAPED_UNICODE);
+                $this->jsonResponse(['success' => false, 'error' => 'Ошибка при обновлении корзины']);
             }
         } catch (\Exception $e) {
-            echo json_encode([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            $this->jsonResponse(['success' => false, 'error' => $e->getMessage()]);
         }
     }
 
     /**
      * AJAX-метод для уменьшения количества товара
      */
-    public function ajaxDecreaseProduct(): void
+    public function ajaxDecreaseProduct(UpdateCartRequest $request): void
     {
-        header('Content-Type: application/json; charset=utf-8');
-
-        if ($this->auth->isGuest()) {
-            echo json_encode([
-                'success' => false,
-                'error' => 'Необходимо авторизоваться'
-            ], JSON_UNESCAPED_UNICODE);
+        if (!$this->validateAjaxRequest()) {
             return;
         }
 
-        if (!$this->auth->isPostRequest()) {
-            echo json_encode([
-                'success' => false,
-                'error' => 'Неверный метод запроса'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
-        }
-
-        $productId = (int)($this->auth->getPostParam('product_id', 0));
+        $productId = $request->getProductId();
 
         if ($productId <= 0) {
-            echo json_encode([
-                'success' => false,
-                'error' => 'Неверный ID товара'
-            ], JSON_UNESCAPED_UNICODE);
+            $this->jsonResponse(['success' => false, 'error' => 'Неверный ID товара']);
             return;
         }
 
@@ -287,13 +226,16 @@ class CartController extends BaseController
         $newAmount = max(1, $currentAmount - 1);
 
         if ($newAmount === $currentAmount) {
-            echo json_encode([
+            $cartTotalAmount = $this->cartService->getCartTotalAmount($userId);
+            $cartTotalPrice = $this->cartService->getCartTotalPrice($userId);
+
+            $this->jsonResponse([
                 'success' => true,
-                'cart_count' => $this->cartService->getCartTotalAmount($userId),
-                'cart_total' => $this->cartService->getCartTotalPrice($userId),
+                'cart_count' => $cartTotalAmount,
+                'cart_total' => $cartTotalPrice,
                 'product_id' => $productId,
                 'new_amount' => $newAmount
-            ], JSON_UNESCAPED_UNICODE);
+            ]);
             return;
         }
 
@@ -304,57 +246,34 @@ class CartController extends BaseController
                 $cartTotalAmount = $this->cartService->getCartTotalAmount($userId);
                 $cartTotalPrice = $this->cartService->getCartTotalPrice($userId);
 
-                echo json_encode([
+                $this->jsonResponse([
                     'success' => true,
                     'cart_count' => $cartTotalAmount,
                     'cart_total' => $cartTotalPrice,
                     'product_id' => $productId,
                     'new_amount' => $newAmount
-                ], JSON_UNESCAPED_UNICODE);
+                ]);
             } else {
-                echo json_encode([
-                    'success' => false,
-                    'error' => 'Ошибка при обновлении корзины'
-                ], JSON_UNESCAPED_UNICODE);
+                $this->jsonResponse(['success' => false, 'error' => 'Ошибка при обновлении корзины']);
             }
         } catch (\Exception $e) {
-            echo json_encode([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            $this->jsonResponse(['success' => false, 'error' => $e->getMessage()]);
         }
     }
 
     /**
      * AJAX-метод для удаления товара из корзины
      */
-    public function ajaxRemoveItem(): void
+    public function ajaxRemoveItem(UpdateCartRequest $request): void
     {
-        header('Content-Type: application/json; charset=utf-8');
-
-        if ($this->auth->isGuest()) {
-            echo json_encode([
-                'success' => false,
-                'error' => 'Необходимо авторизоваться'
-            ], JSON_UNESCAPED_UNICODE);
+        if (!$this->validateAjaxRequest()) {
             return;
         }
 
-        if (!$this->auth->isPostRequest()) {
-            echo json_encode([
-                'success' => false,
-                'error' => 'Неверный метод запроса'
-            ], JSON_UNESCAPED_UNICODE);
-            return;
-        }
-
-        $productId = (int)($this->auth->getPostParam('product_id', 0));
+        $productId = $request->getProductId();
 
         if ($productId <= 0) {
-            echo json_encode([
-                'success' => false,
-                'error' => 'Неверный ID товара'
-            ], JSON_UNESCAPED_UNICODE);
+            $this->jsonResponse(['success' => false, 'error' => 'Неверный ID товара']);
             return;
         }
 
@@ -366,26 +285,20 @@ class CartController extends BaseController
             if ($result) {
                 $cartTotalAmount = $this->cartService->getCartTotalAmount($userId);
                 $cartTotalPrice = $this->cartService->getCartTotalPrice($userId);
-                $isEmpty = $this->cartService->isCartEmpty($userId);
+                $isEmpty = $this->cartService->isEmpty($userId);
 
-                echo json_encode([
+                $this->jsonResponse([
                     'success' => true,
                     'cart_count' => $cartTotalAmount,
                     'cart_total' => $cartTotalPrice,
                     'is_empty' => $isEmpty,
                     'product_id' => $productId
-                ], JSON_UNESCAPED_UNICODE);
+                ]);
             } else {
-                echo json_encode([
-                    'success' => false,
-                    'error' => 'Ошибка при удалении товара'
-                ], JSON_UNESCAPED_UNICODE);
+                $this->jsonResponse(['success' => false, 'error' => 'Ошибка при удалении товара']);
             }
         } catch (\Exception $e) {
-            echo json_encode([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], JSON_UNESCAPED_UNICODE);
+            $this->jsonResponse(['success' => false, 'error' => $e->getMessage()]);
         }
     }
 
@@ -393,6 +306,7 @@ class CartController extends BaseController
     {
         if (!$this->auth->isPostRequest()) {
             $this->auth->redirect("/cart");
+            return;
         }
 
         $this->auth->requireAuth();
@@ -401,10 +315,10 @@ class CartController extends BaseController
 
         if ($productId <= 0) {
             $this->auth->redirect("/catalog");
+            return;
         }
 
         $currentAmount = $this->cartService->getCurrentAmount($this->auth->getUserId(), $productId);
-
         $this->cartService->updateItem($this->auth->getUserId(), $productId, $currentAmount + 1);
 
         $this->auth->redirect("/cart");
@@ -414,6 +328,7 @@ class CartController extends BaseController
     {
         if (!$this->auth->isPostRequest()) {
             $this->auth->redirect("/cart");
+            return;
         }
 
         $this->auth->requireAuth();
@@ -422,10 +337,10 @@ class CartController extends BaseController
 
         if ($productId <= 0) {
             $this->auth->redirect("/catalog");
+            return;
         }
 
         $currentAmount = $this->cartService->getCurrentAmount($this->auth->getUserId(), $productId);
-
         $newAmount = max(1, $currentAmount - 1);
 
         if ($newAmount !== $currentAmount) {
@@ -433,5 +348,33 @@ class CartController extends BaseController
         }
 
         $this->auth->redirect("/cart");
+    }
+
+    /**
+     * Вспомогательный метод для валидации AJAX-запросов
+     */
+    private function validateAjaxRequest(): bool
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if ($this->auth->isGuest()) {
+            $this->jsonResponse(['success' => false, 'error' => 'Необходимо авторизоваться']);
+            return false;
+        }
+
+        if (!$this->auth->isPostRequest()) {
+            $this->jsonResponse(['success' => false, 'error' => 'Неверный метод запроса']);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Вспомогательный метод для отправки JSON-ответов
+     */
+    private function jsonResponse(array $data): void
+    {
+        echo json_encode($data, JSON_UNESCAPED_UNICODE);
     }
 }
