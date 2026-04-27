@@ -8,7 +8,7 @@ class LoggerService implements LoggerInterface
 {
     private string $logFile;
 
-    public function __construct(string $logFile = null)
+    public function __construct(string $logFile = null) // Нарушение: string не может быть null без ?
     {
         if ($logFile == null) {
             // Используйте абсолютный путь

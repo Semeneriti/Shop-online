@@ -9,6 +9,7 @@ use Models\Cart;
 
 class CartService
 {
+    // каждый метод создаёт new Cart($userId), что означает отдельный запрос к БД. В рамках одного запроса это может создавать от 5 до 8 экземпляров Cart. КАк думаешь можно решит эту проблему? Можешь посмотреть в лекцию
     public function getCart(int $userId): Cart
     {
         return new Cart($userId);

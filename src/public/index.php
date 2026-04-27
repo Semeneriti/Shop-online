@@ -1,5 +1,7 @@
 <?php
 
+// нет declare(strict_types=1). Это не нарушение PSR, но является несоответствием стилю всего проекта и хорошей практике.
+
 require_once __DIR__ . '/../Core/Autoloader.php';
 
 \Core\Autoloader::register();

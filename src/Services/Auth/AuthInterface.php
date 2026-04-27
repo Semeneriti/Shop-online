@@ -12,15 +12,15 @@ interface AuthInterface
 
     public function redirect(string $url): void;
 
-    public function setSessionValue(string $key, $value): void;
+    public function setSessionValue(string $key, $value): void; // где типизация $value?
 
-    public function getSessionValue(string $key, $default = null);
+    public function getSessionValue(string $key, $default = null); // где типизация $default? mixed или другой тип?
 
     public function unsetSessionValue(string $key): void;
 
     public function isPostRequest(): bool;
 
-    public function getPostParam(string $key, $default = null);
+    public function getPostParam(string $key, $default = null); // где типизация $default?
 
     public function getPostInt(string $key, int $default = 0): int;
 

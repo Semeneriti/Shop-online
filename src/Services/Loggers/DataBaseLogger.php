@@ -35,7 +35,7 @@ class DataBaseLogger implements LoggerInterface
 
     private function saveToDb(string $level, string $message, array $context = []): void
     {
-
+// лишняя пустая строка
         $contextString = '';
         if (!empty($context)) {
             foreach ($context as $key => $value) {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DTO;
 
-class AddToCartDto
+class AddToCartDto // AddToCartDto и CartItemDto — полностью идентичные классы. Один из них лишний.
 {
     private int $userId;
     private int $productId;

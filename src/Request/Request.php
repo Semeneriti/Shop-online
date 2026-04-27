@@ -32,7 +32,7 @@ abstract class Request
         return $this->data;
     }
 
-    protected function getValue(string $key, $default = null)
+    protected function getValue(string $key, $default = null) // где типизация $default?
     {
         return $this->data[$key] ?? $default;
     }

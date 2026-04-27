@@ -32,7 +32,7 @@ class UserController extends Controller
         require_once __DIR__ . '/../Views/registration.php';
     }
 
-    public function registrate(RegisterRequest $request = null): void
+    public function registrate(RegisterRequest $request = null): void // Нарушение: не может быть null без ?
     {
         if (!$this->auth->isPostRequest()) {
             $this->auth->redirect('/registration');
@@ -73,7 +73,7 @@ class UserController extends Controller
         require_once __DIR__ . '/../Views/registration.php';
     }
 
-    public function login(LoginRequest $request = null): void
+    public function login(LoginRequest $request = null): void // Нарушение: не может быть null без ?
     {
         if (!$this->auth->isGuest()) {
             $this->auth->redirect('/catalog');

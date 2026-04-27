@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-
+// пустая строка вместо, убрать, должна быть одна
 
 namespace Services\Loggers;
 
