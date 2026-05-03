@@ -39,7 +39,6 @@ class Order extends Model
         $this->comment = $comment;
         $this->totalPrice = $totalPrice;
         $this->status = $status;
-
         $this->createdAt = $createdAt ? new \DateTime($createdAt) : new \DateTime();
         $this->updatedAt = $updatedAt ? new \DateTime($updatedAt) : new \DateTime();
     }

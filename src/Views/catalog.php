@@ -78,7 +78,9 @@
             $inCart = false;
             $cartAmount = 0;
             foreach ($cartItems as $cartItem) {
-                if ($cartItem['product']->getId() == $product->getId()) {
+                $cartItemProduct = $cartItem['product'];
+                $cartItemId = is_array($cartItemProduct) ? ($cartItemProduct['id'] ?? 0) : $cartItemProduct->getId();
+                if ($cartItemId == $product->getId()) {
                     $inCart = true;
                     $cartAmount = $cartItem['amount'];
                     break;
@@ -143,7 +145,6 @@
                     '<button class="btn btn-red btn-sm ajax-remove" data-product-id="' + productId + '">🗑</button>' +
                     '</div>';
                 actionsDiv.html(newHtml);
-
                 bindCardEvents(card);
             } else {
                 var newHtml = '<div class="add-form">' +
@@ -151,7 +152,6 @@
                     '<button class="btn btn-green btn-add" data-product-id="' + productId + '">Добавить</button>' +
                     '</div>';
                 actionsDiv.html(newHtml);
-
                 card.find('.btn-add').off('click').click(function(e) {
                     e.preventDefault();
                     var pid = $(this).data('product-id');
@@ -159,7 +159,6 @@
                     addToCart(pid, amount);
                 });
             }
-
             updateCartBadge(cartCount, cartTotal);
         }
 
@@ -171,91 +170,13 @@
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
-                        updateProductCard(productId, response.new_amount, response.cart_count, response.cart_total);
+                        location.reload();
                     } else {
                         alert(response.error);
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
                     alert('Ошибка при добавлении товара');
-                }
-            });
-        }
-
-        function increaseProduct(productId) {
-            $.ajax({
-                type: "POST",
-                url: "/api/cart/increase",
-                data: { product_id: productId },
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        var card = $('.product-card[data-product-id="' + productId + '"]');
-                        card.find('.cart-amount[data-product-id="' + productId + '"]').text(response.new_amount);
-                        updateCartBadge(response.cart_count, response.cart_total);
-                    } else {
-                        alert(response.error);
-                    }
-                }
-            });
-        }
-
-        function decreaseProduct(productId) {
-            $.ajax({
-                type: "POST",
-                url: "/api/cart/decrease",
-                data: { product_id: productId },
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        var card = $('.product-card[data-product-id="' + productId + '"]');
-                        var newAmount = response.new_amount;
-                        var cartCount = response.cart_count;
-                        var cartTotal = response.cart_total;
-
-                        if (newAmount > 0) {
-                            card.find('.cart-amount[data-product-id="' + productId + '"]').text(newAmount);
-                            updateCartBadge(cartCount, cartTotal);
-                        } else {
-                            updateProductCard(productId, 0, cartCount, cartTotal);
-                        }
-                    } else {
-                        alert(response.error);
-                    }
-                }
-            });
-        }
-
-        function removeItem(productId) {
-            $.ajax({
-                type: "POST",
-                url: "/api/cart/remove",
-                data: { product_id: productId },
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        if (response.is_empty) {
-                            updateProductCard(productId, 0, 0, 0);
-                        } else {
-                            var card = $('.product-card[data-product-id="' + productId + '"]');
-                            card.find('.cart-control').remove();
-                            var newHtml = '<div class="add-form">' +
-                                '<input type="number" class="amount-input" data-product-id="' + productId + '" value="1" min="1" style="width: 60px; padding: 5px;">' +
-                                '<button class="btn btn-green btn-add" data-product-id="' + productId + '">Добавить</button>' +
-                                '</div>';
-                            card.find('.product-actions').html(newHtml);
-
-                            card.find('.btn-add').off('click').click(function(e) {
-                                e.preventDefault();
-                                var pid = $(this).data('product-id');
-                                var amount = card.find('.amount-input').val();
-                                addToCart(pid, amount);
-                            });
-                            updateCartBadge(response.cart_count, response.cart_total);
-                        }
-                    } else {
-                        alert(response.error);
-                    }
                 }
             });
         }
@@ -263,18 +184,25 @@
         function bindCardEvents(card) {
             card.find('.ajax-increase').off('click').click(function() {
                 var productId = $(this).data('product-id');
-                increaseProduct(productId);
+                $.ajax({
+                    type: "POST", url: "/api/cart/increase", data: { product_id: productId }, dataType: 'json',
+                    success: function(response) { if (response.success) location.reload(); else alert(response.error); }
+                });
             });
-
             card.find('.ajax-decrease').off('click').click(function() {
                 var productId = $(this).data('product-id');
-                decreaseProduct(productId);
+                $.ajax({
+                    type: "POST", url: "/api/cart/decrease", data: { product_id: productId }, dataType: 'json',
+                    success: function(response) { if (response.success) location.reload(); else alert(response.error); }
+                });
             });
-
             card.find('.ajax-remove').off('click').click(function() {
                 var productId = $(this).data('product-id');
-                if (confirm('Удалить товар из корзины?')) {
-                    removeItem(productId);
+                if (confirm('Удалить товар?')) {
+                    $.ajax({
+                        type: "POST", url: "/api/cart/remove", data: { product_id: productId }, dataType: 'json',
+                        success: function(response) { if (response.success) location.reload(); else alert(response.error); }
+                    });
                 }
             });
         }
@@ -282,15 +210,11 @@
         $('.btn-add').click(function(e) {
             e.preventDefault();
             var productId = $(this).data('product-id');
-            var card = $(this).closest('.product-card');
-            var amount = card.find('.amount-input').val();
+            var amount = $(this).closest('.product-card').find('.amount-input').val();
             addToCart(productId, amount);
         });
-
-        $('.ajax-increase').each(function() { bindCardEvents($(this).closest('.product-card')); });
-        $('.ajax-decrease').each(function() { bindCardEvents($(this).closest('.product-card')); });
-        $('.ajax-remove').each(function() { bindCardEvents($(this).closest('.product-card')); });
     });
 </script>
 </body>
 </html>
+

@@ -52,13 +52,13 @@ class CookieAuthService implements AuthInterface
         exit;
     }
 
-    public function setSessionValue(string $key, $value): void
+    public function setSessionValue(string $key, mixed $value): void
     {
         setcookie($key, $value, time() + 3600 * 24 * 30, '/');
         $this->cookieData[$key] = $value;
     }
 
-    public function getSessionValue(string $key, $default = null)
+    public function getSessionValue(string $key, mixed $default = null): mixed
     {
         return $this->cookieData[$key] ?? $default;
     }
@@ -74,7 +74,7 @@ class CookieAuthService implements AuthInterface
         return $_SERVER['REQUEST_METHOD'] === 'POST';
     }
 
-    public function getPostParam(string $key, $default = null)
+    public function getPostParam(string $key, mixed $default = null): mixed
     {
         return $_POST[$key] ?? $default;
     }

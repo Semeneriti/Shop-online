@@ -33,7 +33,6 @@ class Product extends Model
         $this->price = $price;
         $this->stock = $stock;
         $this->imageUrl = $imageUrl ?? '/images/no-image.png';
-
         $this->createdAt = $createdAt ? new \DateTime($createdAt) : null;
         $this->updatedAt = $updatedAt ? new \DateTime($updatedAt) : null;
     }

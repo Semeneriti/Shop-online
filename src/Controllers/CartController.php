@@ -163,11 +163,9 @@ class CartController extends Controller
         }
 
         $userId = $this->auth->getUserId();
-        $currentAmount = $this->cartService->getCurrentAmount($userId, $productId);
-        $newAmount = $currentAmount + 1;
 
         try {
-            $result = $this->cartService->updateItem($userId, $productId, $newAmount);
+            $result = $this->cartService->increaseItem($userId, $productId);
 
             if ($result) {
                 $cartTotalAmount = $this->cartService->getCartTotalAmount($userId);
@@ -177,8 +175,7 @@ class CartController extends Controller
                     'success' => true,
                     'cart_count' => $cartTotalAmount,
                     'cart_total' => $cartTotalPrice,
-                    'product_id' => $productId,
-                    'new_amount' => $newAmount
+                    'product_id' => $productId
                 ]);
             } else {
                 $this->jsonResponse(['success' => false, 'error' => 'Ошибка при обновлении корзины']);
@@ -202,25 +199,9 @@ class CartController extends Controller
         }
 
         $userId = $this->auth->getUserId();
-        $currentAmount = $this->cartService->getCurrentAmount($userId, $productId);
-        $newAmount = max(1, $currentAmount - 1);
-
-        if ($newAmount === $currentAmount) {
-            $cartTotalAmount = $this->cartService->getCartTotalAmount($userId);
-            $cartTotalPrice = $this->cartService->getCartTotalPrice($userId);
-
-            $this->jsonResponse([
-                'success' => true,
-                'cart_count' => $cartTotalAmount,
-                'cart_total' => $cartTotalPrice,
-                'product_id' => $productId,
-                'new_amount' => $newAmount
-            ]);
-            return;
-        }
 
         try {
-            $result = $this->cartService->updateItem($userId, $productId, $newAmount);
+            $result = $this->cartService->decreaseItem($userId, $productId);
 
             if ($result) {
                 $cartTotalAmount = $this->cartService->getCartTotalAmount($userId);
@@ -230,8 +211,7 @@ class CartController extends Controller
                     'success' => true,
                     'cart_count' => $cartTotalAmount,
                     'cart_total' => $cartTotalPrice,
-                    'product_id' => $productId,
-                    'new_amount' => $newAmount
+                    'product_id' => $productId
                 ]);
             } else {
                 $this->jsonResponse(['success' => false, 'error' => 'Ошибка при обновлении корзины']);
@@ -295,9 +275,7 @@ class CartController extends Controller
             return;
         }
 
-        $currentAmount = $this->cartService->getCurrentAmount($this->auth->getUserId(), $productId);
-        $this->cartService->updateItem($this->auth->getUserId(), $productId, $currentAmount + 1);
-
+        $this->cartService->increaseItem($this->auth->getUserId(), $productId);
         $this->auth->redirect("/cart");
     }
 
@@ -317,13 +295,7 @@ class CartController extends Controller
             return;
         }
 
-        $currentAmount = $this->cartService->getCurrentAmount($this->auth->getUserId(), $productId);
-        $newAmount = max(1, $currentAmount - 1);
-
-        if ($newAmount !== $currentAmount) {
-            $this->cartService->updateItem($this->auth->getUserId(), $productId, $newAmount);
-        }
-
+        $this->cartService->decreaseItem($this->auth->getUserId(), $productId);
         $this->auth->redirect("/cart");
     }
 
@@ -344,7 +316,6 @@ class CartController extends Controller
         }
 
         $this->cartService->removeItem($this->auth->getUserId(), $productId);
-
         $this->auth->redirect("/cart");
     }
 }

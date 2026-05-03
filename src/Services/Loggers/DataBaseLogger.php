@@ -17,25 +17,21 @@ class DataBaseLogger implements LoggerInterface
 
     public function error(string $message, array $context = []): void
     {
-        $level = 'ERROR';
-        $this->saveToDb($level, $message, $context);
+        $this->saveToDb('ERROR', $message, $context);
     }
 
     public function info(string $message, array $context = []): void
     {
-        $level = 'INFO';
-        $this->saveToDb($level, $message, $context);
+        $this->saveToDb('INFO', $message, $context);
     }
 
     public function warning(string $message, array $context = []): void
     {
-        $level = 'WARNING';
-        $this->saveToDb($level, $message, $context);
+        $this->saveToDb('WARNING', $message, $context);
     }
 
     private function saveToDb(string $level, string $message, array $context = []): void
     {
-
         $contextString = '';
         if (!empty($context)) {
             foreach ($context as $key => $value) {

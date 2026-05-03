@@ -53,23 +53,10 @@ class ProductController extends Controller
             return;
         }
 
-        $product = Product::findById($productId);
-        if (!$product) {
-            echo json_encode(['success' => false, 'error' => 'Товар не найден'], JSON_UNESCAPED_UNICODE);
-            return;
-        }
-
         $userId = $this->auth->getUserId();
-        $currentAmount = $this->cartService->getCurrentAmount($userId, $productId);
-        $newAmount = $currentAmount + $amount;
-
-        if ($newAmount > $product->getStock()) {
-            echo json_encode(['success' => false, 'error' => 'Недостаточно товара на складе. Доступно: ' . $product->getStock() . ' шт.'], JSON_UNESCAPED_UNICODE);
-            return;
-        }
 
         try {
-            $dto = new AddToCartDto($userId, $productId, $newAmount);
+            $dto = new AddToCartDto($userId, $productId, $amount);
             $result = $this->cartService->addItem($dto);
 
             if ($result) {
@@ -80,15 +67,16 @@ class ProductController extends Controller
                     'success' => true,
                     'cart_count' => $cartTotalAmount,
                     'cart_total' => $cartTotalPrice,
-                    'product_id' => $productId,
-                    'new_amount' => $newAmount
+                    'product_id' => $productId
                 ], JSON_UNESCAPED_UNICODE);
             } else {
                 echo json_encode(['success' => false, 'error' => 'Ошибка при добавлении товара в корзину'], JSON_UNESCAPED_UNICODE);
             }
+        } catch (\InvalidArgumentException $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
         } catch (\Exception $e) {
             $this->logger->error('AJAX add to cart error: ' . $e->getMessage());
-            echo json_encode(['success' => false, 'error' => 'Произошла ошибка: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['success' => false, 'error' => 'Произошла ошибка'], JSON_UNESCAPED_UNICODE);
         }
     }
 
@@ -115,30 +103,17 @@ class ProductController extends Controller
             return;
         }
 
-        $product = Product::findById($productId);
-
-        if (!$product) {
-            $this->auth->setSessionValue('error_message', "Товар не найден");
-            $this->auth->redirect("/add-product");
-            return;
-        }
-
-        if ($amount > $product->getStock()) {
-            $this->auth->setSessionValue('error_message', "Недостаточно товара на складе. Доступно: " . $product->getStock() . " шт.");
-            $this->auth->redirect("/add-product");
-            return;
-        }
-
         $userId = $this->auth->getUserId();
-        $currentAmount = $this->cartService->getCurrentAmount($userId, $productId);
-        $newAmount = $currentAmount + $amount;
 
-        $dto = new AddToCartDto($userId, $productId, $newAmount);
-
-        if ($this->cartService->addItem($dto)) {
+        try {
+            $dto = new AddToCartDto($userId, $productId, $amount);
+            $this->cartService->addItem($dto);
             $this->auth->setSessionValue('success_message', "Товар успешно добавлен в корзину!");
             $this->auth->redirect("/catalog");
-        } else {
+        } catch (\InvalidArgumentException $e) {
+            $this->auth->setSessionValue('error_message', $e->getMessage());
+            $this->auth->redirect("/add-product");
+        } catch (\Exception $e) {
             $this->auth->setSessionValue('error_message', "Ошибка при добавлении товара в корзину");
             $this->auth->redirect("/add-product");
         }

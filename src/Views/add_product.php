@@ -39,4 +39,3 @@
 </form>
 </body>
 </html>
-42. Views/product.php

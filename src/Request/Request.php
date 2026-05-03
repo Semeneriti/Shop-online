@@ -32,7 +32,7 @@ abstract class Request
         return $this->data;
     }
 
-    protected function getValue(string $key, $default = null)
+    protected function getValue(string $key, mixed $default = null): mixed
     {
         return $this->data[$key] ?? $default;
     }

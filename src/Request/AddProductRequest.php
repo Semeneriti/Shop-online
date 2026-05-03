@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Request;
 
-use DTO\AddToCartDto;
-
 class AddProductRequest extends Request
 {
     protected function validate(): void
@@ -30,10 +28,5 @@ class AddProductRequest extends Request
     public function getAmount(): int
     {
         return $this->getInt('amount');
-    }
-
-    public function getAddToCartDto(int $userId): AddToCartDto
-    {
-        return new AddToCartDto($userId, $this->getProductId(), $this->getAmount());
     }
 }

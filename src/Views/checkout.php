@@ -39,11 +39,16 @@
             <h2>Ваш заказ:</h2>
             <ul class="order-items">
                 <?php foreach ($cartData['items'] as $item): ?>
-                    <?php $productData = $item['product']; $amount = $item['amount']; ?>
+                    <?php
+                    $productData = $item['product'];
+                    $amount = $item['amount'];
+                    $productPrice = is_array($productData) ? ($productData['price'] ?? 0) : $productData->getPrice();
+                    $productName = is_array($productData) ? ($productData['name'] ?? 'Товар') : $productData->getName();
+                    ?>
                     <li>
-                        <strong><?= htmlspecialchars($productData->getName()) ?></strong><br>
-                        <?= $amount ?> шт. × <?= number_format($productData->getPrice(), 2, '.', ' ') ?> ₽
-                        = <strong><?= number_format($productData->getPrice() * $amount, 2, '.', ' ') ?> ₽</strong>
+                        <strong><?= htmlspecialchars($productName) ?></strong><br>
+                        <?= $amount ?> шт. × <?= number_format($productPrice, 2, '.', ' ') ?> ₽
+                        = <strong><?= number_format($productPrice * $amount, 2, '.', ' ') ?> ₽</strong>
                     </li>
                 <?php endforeach; ?>
             </ul>
@@ -70,6 +75,9 @@
             <div class="form-group">
                 <label for="comment">Комментарий</label>
                 <textarea id="comment" name="comment" class="form-control"><?= htmlspecialchars($formData['comment'] ?? '') ?></textarea>
+                <?php if (isset($errors['comment'])): ?>
+                    <div class="error-message"><?= $errors['comment'] ?></div>
+                <?php endif; ?>
             </div>
 
             <button type="submit" class="btn">Подтвердить заказ</button>

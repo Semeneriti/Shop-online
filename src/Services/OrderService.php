@@ -6,19 +6,52 @@ namespace Services;
 
 use Models\Order;
 use Models\Cart;
+use Models\Product;
 use DTO\OrderCreateDto;
 
 class OrderService
 {
     private const MIN_ORDER_TOTAL = 100;
 
-    public function createOrderFromCart(int $userId, array $orderData): ?Order
+    private function validateCartStock(Cart $cart): void
     {
-        $cart = new Cart($userId);
+        foreach ($cart->getItems() as $item) {
+            $product = $item['product'];
+            $amount = $item['amount'];
 
-        if ($cart->isEmpty()) {
-            throw new \RuntimeException("Корзина пуста");
+            if ($amount > $product->getStock()) {
+                throw new \RuntimeException(
+                    "Товар '{$product->getName()}' недоступен в требуемом количестве. Доступно: {$product->getStock()} шт."
+                );
+            }
         }
+    }
+
+    private function decreaseStock(Cart $cart): array
+    {
+        $orderItems = [];
+
+        foreach ($cart->getItems() as $item) {
+            $product = $item['product'];
+            $amount = $item['amount'];
+
+            $product->decreaseStock($amount);
+
+            $orderItems[] = [
+                'product_id' => $product->getId(),
+                'product_name' => $product->getName(),
+                'amount' => $amount,
+                'price' => $product->getPrice(),
+                'total' => $product->getPrice() * $amount
+            ];
+        }
+
+        return $orderItems;
+    }
+
+    private function getOrderDataFromCart(Cart $cart, int $userId, array $orderData): OrderCreateDto
+    {
+        $this->validateCartStock($cart);
 
         $cartTotal = $cart->getTotalPrice();
 
@@ -28,18 +61,33 @@ class OrderService
             );
         }
 
-        $checkoutData = $cart->checkout();
+        $orderItems = $this->decreaseStock($cart);
 
-        $orderDto = new OrderCreateDto(
+        return new OrderCreateDto(
             $userId,
             $orderData['address'],
             $orderData['phone'],
-            $checkoutData['items'],
-            $checkoutData['total_price'],
+            $orderItems,
+            $cartTotal,
             $orderData['comment'] ?? null
         );
+    }
 
-        return Order::createFromCart($orderDto);
+    public function createOrderFromCart(int $userId, array $orderData): ?Order
+    {
+        $cart = new Cart($userId);
+
+        if ($cart->isEmpty()) {
+            throw new \RuntimeException("Корзина пуста");
+        }
+
+        $orderDto = $this->getOrderDataFromCart($cart, $userId, $orderData);
+
+        $order = Order::createFromCart($orderDto);
+
+        $cart->clear();
+
+        return $order;
     }
 
     public function getOrderById(int $orderId): ?Order
@@ -49,7 +97,23 @@ class OrderService
 
     public function getOrdersByUserId(int $userId): array
     {
-        return Order::findByUserId($userId);
+        $ordersData = Order::findByUserId($userId);
+        $result = [];
+
+        foreach ($ordersData as $orderData) {
+            $result[] = [
+                'id' => $orderData['order']->getId(),
+                'address' => $orderData['order']->getAddress(),
+                'phone' => $orderData['order']->getPhone(),
+                'total_price' => $orderData['order']->getTotalPrice(),
+                'status' => $orderData['order']->getStatus(),
+                'created_at' => $orderData['order']->getCreatedAt()->format('Y-m-d H:i:s'),
+                'items_count' => $orderData['items_count'],
+                'total_items' => $orderData['total_items']
+            ];
+        }
+
+        return $result;
     }
 
     public function getOrderDetails(int $orderId): array

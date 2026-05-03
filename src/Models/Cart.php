@@ -159,6 +159,25 @@ class Cart extends Model
         return empty($this->items);
     }
 
+    public function getItemProductIds(): array
+    {
+        $productIds = [];
+        foreach ($this->items as $item) {
+            $productIds[] = $item['product']->getId();
+        }
+        return $productIds;
+    }
+
+    public function getItemAmount(int $productId): int
+    {
+        foreach ($this->items as $item) {
+            if ($item['product']->getId() === $productId) {
+                return $item['amount'];
+            }
+        }
+        return 0;
+    }
+
     private function loadItems(): void
     {
         $this->items = [];
@@ -209,46 +228,6 @@ class Cart extends Model
         return new self($userId);
     }
 
-    public function checkout(): array
-    {
-        if ($this->isEmpty()) {
-            throw new \RuntimeException("Корзина пуста");
-        }
-
-        foreach ($this->items as $item) {
-            if ($item['amount'] > $item['product']->getStock()) {
-                throw new \RuntimeException(
-                    "Товар '{$item['product']->getName()}' недоступен в требуемом количестве"
-                );
-            }
-        }
-
-        $orderItems = [];
-
-        foreach ($this->items as $item) {
-            $product = $item['product'];
-            $product->decreaseStock($item['amount']);
-
-            $orderItems[] = [
-                'product_id' => $product->getId(),
-                'product_name' => $product->getName(),
-                'amount' => $item['amount'],
-                'price' => $product->getPrice(),
-                'total' => $item['total_price']
-            ];
-        }
-
-        $this->clear();
-
-        return [
-            'user_id' => $this->userId,
-            'items' => $orderItems,
-            'total_amount' => $this->getTotalAmount(),
-            'total_price' => $this->getTotalPrice(),
-            'created_at' => date('Y-m-d H:i:s')
-        ];
-    }
-
     public function toArray(): array
     {
         $itemsArray = [];
@@ -270,3 +249,4 @@ class Cart extends Model
         ];
     }
 }
+

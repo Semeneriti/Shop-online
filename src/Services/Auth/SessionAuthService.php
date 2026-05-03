@@ -55,12 +55,12 @@ class SessionAuthService implements AuthInterface
         exit;
     }
 
-    public function setSessionValue(string $key, $value): void
+    public function setSessionValue(string $key, mixed $value): void
     {
         $this->session[$key] = $value;
     }
 
-    public function getSessionValue(string $key, $default = null)
+    public function getSessionValue(string $key, mixed $default = null): mixed
     {
         return $this->session[$key] ?? $default;
     }
@@ -100,7 +100,7 @@ class SessionAuthService implements AuthInterface
         return $_SERVER['REQUEST_METHOD'] === 'POST';
     }
 
-    public function getPostParam(string $key, $default = null)
+    public function getPostParam(string $key, mixed $default = null): mixed
     {
         return $_POST[$key] ?? $default;
     }

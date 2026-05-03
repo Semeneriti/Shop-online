@@ -50,7 +50,9 @@
         <h2>История заказов</h2>
         <?php if (!empty($orders)): ?>
             <table class="orders-table">
-                <thead><tr><th>№ заказа</th><th>Дата</th><th>Адрес</th><th>Телефон</th><th>Сумма</th><th>Статус</th></tr></thead>
+                <thead>
+                <tr><th>№ заказа</th><th>Дата</th><th>Адрес</th><th>Телефон</th><th>Сумма</th><th>Статус</th></tr>
+                </thead>
                 <tbody>
                 <?php foreach ($orders as $order): ?>
                     <tr>

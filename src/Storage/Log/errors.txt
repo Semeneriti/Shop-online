@@ -197,3 +197,164 @@
 #4 {main}
 [2026-04-25 16:32:17] [ERROR] Страница не найдена: /.well-known/appspecific/com.chrome.devtools.json | url: /.well-known/appspecific/com.chrome.devtools.json, method: GET, code: 404
 [2026-04-25 16:34:15] [ERROR] Страница не найдена: /.well-known/appspecific/com.chrome.devtools.json | url: /.well-known/appspecific/com.chrome.devtools.json, method: GET, code: 404
+[2026-05-02 15:55:11] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "products" does not exist
+LINE 1: SELECT * FROM products ORDER BY id
+                      ^ | url: /catalog, method: GET, controller: Controllers\CatalogController, action: index, file: /var/www/html/src/Models/Product.php, line: 117, trace: #0 /var/www/html/src/Models/Product.php(117): PDO->query('SELECT * FROM p...')
+#1 /var/www/html/src/Controllers/CatalogController.php(22): Models\Product::getAll()
+#2 /var/www/html/src/Core/App.php(84): Controllers\CatalogController->index()
+#3 /var/www/html/src/public/index.php(48): Core\App->run()
+#4 {main}
+[2026-05-02 15:55:11] [ERROR] Страница не найдена: /favicon.ico | url: /favicon.ico, method: GET, code: 404
+[2026-05-02 15:55:20] [ERROR] Страница не найдена: / | url: /, method: GET, code: 404
+[2026-05-02 15:55:34] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "users" does not exist
+LINE 1: SELECT * FROM users WHERE email = $1
+                      ^ | url: /login, method: POST, controller: Controllers\UserController, action: login, file: /var/www/html/src/Models/User.php, line: 71, trace: #0 /var/www/html/src/Models/User.php(71): PDOStatement->execute(Array)
+#1 /var/www/html/src/Controllers/UserController.php(92): Models\User::findByEmail('suka@mail.com')
+#2 /var/www/html/src/Core/App.php(84): Controllers\UserController->login()
+#3 /var/www/html/src/public/index.php(48): Core\App->run()
+#4 {main}
+[2026-05-02 15:57:07] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "users" does not exist
+LINE 1: SELECT * FROM users WHERE email = $1
+                      ^ | url: /registration, method: POST, controller: Controllers\UserController, action: registrate, file: /var/www/html/src/Models/User.php, line: 71, trace: #0 /var/www/html/src/Models/User.php(71): PDOStatement->execute(Array)
+#1 /var/www/html/src/Controllers/UserController.php(56): Models\User::findByEmail('valera@mail.com')
+#2 /var/www/html/src/Core/App.php(84): Controllers\UserController->registrate()
+#3 /var/www/html/src/public/index.php(48): Core\App->run()
+#4 {main}
+[2026-05-02 15:57:52] [ERROR] Страница не найдена: /addToCart | url: /addToCart, method: GET, code: 404
+[2026-05-02 15:58:02] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "users" does not exist
+LINE 1: SELECT * FROM users WHERE email = $1
+                      ^ | url: /login, method: POST, controller: Controllers\UserController, action: login, file: /var/www/html/src/Models/User.php, line: 71, trace: #0 /var/www/html/src/Models/User.php(71): PDOStatement->execute(Array)
+#1 /var/www/html/src/Controllers/UserController.php(92): Models\User::findByEmail('suka@mail.com')
+#2 /var/www/html/src/Core/App.php(84): Controllers\UserController->login()
+#3 /var/www/html/src/public/index.php(48): Core\App->run()
+#4 {main}
+[2026-05-02 15:58:20] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "users" does not exist
+LINE 1: SELECT * FROM users WHERE email = $1
+                      ^ | url: /login, method: POST, controller: Controllers\UserController, action: login, file: /var/www/html/src/Models/User.php, line: 71, trace: #0 /var/www/html/src/Models/User.php(71): PDOStatement->execute(Array)
+#1 /var/www/html/src/Controllers/UserController.php(92): Models\User::findByEmail('suka@mail.com')
+#2 /var/www/html/src/Core/App.php(84): Controllers\UserController->login()
+#3 /var/www/html/src/public/index.php(48): Core\App->run()
+#4 {main}
+[2026-05-02 16:04:14] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "products" does not exist
+LINE 1: SELECT * FROM products ORDER BY id
+                      ^ | url: /catalog, method: GET, controller: Controllers\CatalogController, action: index, file: /var/www/html/src/Models/Product.php, line: 117, trace: #0 /var/www/html/src/Models/Product.php(117): PDO->query('SELECT * FROM p...')
+#1 /var/www/html/src/Controllers/CatalogController.php(22): Models\Product::getAll()
+#2 /var/www/html/src/Core/App.php(84): Controllers\CatalogController->index()
+#3 /var/www/html/src/public/index.php(48): Core\App->run()
+#4 {main}
+[2026-05-02 16:04:43] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "products" does not exist
+LINE 1: SELECT * FROM products WHERE id = $1
+                      ^ | url: /product, method: GET, controller: Controllers\ProductController, action: showProduct, file: /var/www/html/src/Models/Product.php, line: 133, trace: #0 /var/www/html/src/Models/Product.php(133): PDOStatement->execute(Array)
+#1 /var/www/html/src/Controllers/ProductController.php(155): Models\Product::findById(3)
+#2 /var/www/html/src/Core/App.php(84): Controllers\ProductController->showProduct()
+#3 /var/www/html/src/public/index.php(48): Core\App->run()
+#4 {main}
+[2026-05-02 16:05:42] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "products" does not exist
+LINE 1: SELECT * FROM products ORDER BY id
+                      ^ | url: /catalog, method: GET, controller: Controllers\CatalogController, action: index, file: /var/www/html/src/Models/Product.php, line: 117, trace: #0 /var/www/html/src/Models/Product.php(117): PDO->query('SELECT * FROM p...')
+#1 /var/www/html/src/Controllers/CatalogController.php(22): Models\Product::getAll()
+#2 /var/www/html/src/Core/App.php(84): Controllers\CatalogController->index()
+#3 /var/www/html/src/public/index.php(48): Core\App->run()
+#4 {main}
+[2026-05-02 16:05:50] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "products" does not exist
+LINE 1: SELECT * FROM products ORDER BY id
+                      ^ | url: /catalog, method: GET, controller: Controllers\CatalogController, action: index, file: /var/www/html/src/Models/Product.php, line: 117, trace: #0 /var/www/html/src/Models/Product.php(117): PDO->query('SELECT * FROM p...')
+#1 /var/www/html/src/Controllers/CatalogController.php(22): Models\Product::getAll()
+#2 /var/www/html/src/Core/App.php(84): Controllers\CatalogController->index()
+#3 /var/www/html/src/public/index.php(48): Core\App->run()
+#4 {main}
+[2026-05-02 16:07:41] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "users" does not exist
+LINE 1: SELECT * FROM users WHERE email = $1
+                      ^ | url: /registration, method: POST, controller: Controllers\UserController, action: registrate, file: /var/www/html/src/Models/User.php, line: 71, trace: #0 /var/www/html/src/Models/User.php(71): PDOStatement->execute(Array)
+#1 /var/www/html/src/Controllers/UserController.php(56): Models\User::findByEmail('valera@mail.com')
+#2 /var/www/html/src/Core/App.php(84): Controllers\UserController->registrate()
+#3 /var/www/html/src/public/index.php(48): Core\App->run()
+#4 {main}
+[2026-05-02 16:11:22] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "products" does not exist
+LINE 1: SELECT * FROM products ORDER BY id
+                      ^ | url: /catalog, method: GET, controller: Controllers\CatalogController, action: index, file: /var/www/html/src/Models/Product.php, line: 117, trace: #0 /var/www/html/src/Models/Product.php(117): PDO->query('SELECT * FROM p...')
+#1 /var/www/html/src/Controllers/CatalogController.php(22): Models\Product::getAll()
+#2 /var/www/html/src/Core/App.php(84): Controllers\CatalogController->index()
+#3 /var/www/html/src/public/index.php(48): Core\App->run()
+#4 {main}
+[2026-05-03 11:20:29] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "products" does not exist
+LINE 1: SELECT * FROM products ORDER BY id
+                      ^ | url: /catalog, method: GET, controller: Controllers\CatalogController, action: index, file: /var/www/html/src/Models/Product.php, line: 116, trace: #0 /var/www/html/src/Models/Product.php(116): PDO->query('SELECT * FROM p...')
+#1 /var/www/html/src/Controllers/CatalogController.php(22): Models\Product::getAll()
+#2 /var/www/html/src/Core/App.php(84): Controllers\CatalogController->index()
+#3 /var/www/html/src/public/index.php(50): Core\App->run()
+#4 {main}
+[2026-05-03 15:32:26] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "orders" does not exist
+LINE 5:                 FROM orders o 
+                             ^ | url: /profile, method: GET, controller: Controllers\UserController, action: getProfile, file: /var/www/html/src/Models/Order.php, line: 139, trace: #0 /var/www/html/src/Models/Order.php(139): PDOStatement->execute(Array)
+#1 /var/www/html/src/Services/OrderService.php(100): Models\Order::findByUserId(1)
+#2 /var/www/html/src/Controllers/UserController.php(113): Services\OrderService->getOrdersByUserId(1)
+#3 /var/www/html/src/Core/App.php(84): Controllers\UserController->getProfile()
+#4 /var/www/html/src/public/index.php(50): Core\App->run()
+#5 {main}
+[2026-05-03 15:36:19] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "reviews" does not exist
+LINE 1: SELECT * FROM reviews WHERE product_id = $1 ORDER BY created...
+                      ^ | url: /catalog, method: GET, controller: Controllers\CatalogController, action: index, file: /var/www/html/src/Models/Review.php, line: 83, trace: #0 /var/www/html/src/Models/Review.php(83): PDOStatement->execute(Array)
+#1 /var/www/html/src/Models/Product.php(92): Models\Review::findByProductId(1)
+#2 /var/www/html/src/Models/Product.php(97): Models\Product->getReviews()
+#3 /var/www/html/src/Views/catalog.php(100): Models\Product->getAverageRating()
+#4 /var/www/html/src/Controllers/Controller.php(27): require_once('/var/www/html/s...')
+#5 /var/www/html/src/Controllers/CatalogController.php(41): Controllers\Controller->render('catalog', Array)
+#6 /var/www/html/src/Core/App.php(84): Controllers\CatalogController->index()
+#7 /var/www/html/src/public/index.php(50): Core\App->run()
+#8 {main}
+[2026-05-03 15:36:19] [ERROR] Страница не найдена: /images/bounty.jpg | url: /images/bounty.jpg, method: GET, code: 404
+[2026-05-03 15:36:20] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "reviews" does not exist
+LINE 1: SELECT * FROM reviews WHERE product_id = $1 ORDER BY created...
+                      ^ | url: /catalog, method: GET, controller: Controllers\CatalogController, action: index, file: /var/www/html/src/Models/Review.php, line: 83, trace: #0 /var/www/html/src/Models/Review.php(83): PDOStatement->execute(Array)
+#1 /var/www/html/src/Models/Product.php(92): Models\Review::findByProductId(1)
+#2 /var/www/html/src/Models/Product.php(97): Models\Product->getReviews()
+#3 /var/www/html/src/Views/catalog.php(100): Models\Product->getAverageRating()
+#4 /var/www/html/src/Controllers/Controller.php(27): require_once('/var/www/html/s...')
+#5 /var/www/html/src/Controllers/CatalogController.php(41): Controllers\Controller->render('catalog', Array)
+#6 /var/www/html/src/Core/App.php(84): Controllers\CatalogController->index()
+#7 /var/www/html/src/public/index.php(50): Core\App->run()
+#8 {main}
+[2026-05-03 15:36:20] [ERROR] Страница не найдена: /images/bounty.jpg | url: /images/bounty.jpg, method: GET, code: 404
+[2026-05-03 15:36:35] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "reviews" does not exist
+LINE 1: SELECT * FROM reviews WHERE product_id = $1 ORDER BY created...
+                      ^ | url: /catalog, method: GET, controller: Controllers\CatalogController, action: index, file: /var/www/html/src/Models/Review.php, line: 83, trace: #0 /var/www/html/src/Models/Review.php(83): PDOStatement->execute(Array)
+#1 /var/www/html/src/Models/Product.php(92): Models\Review::findByProductId(1)
+#2 /var/www/html/src/Models/Product.php(97): Models\Product->getReviews()
+#3 /var/www/html/src/Views/catalog.php(100): Models\Product->getAverageRating()
+#4 /var/www/html/src/Controllers/Controller.php(27): require_once('/var/www/html/s...')
+#5 /var/www/html/src/Controllers/CatalogController.php(41): Controllers\Controller->render('catalog', Array)
+#6 /var/www/html/src/Core/App.php(84): Controllers\CatalogController->index()
+#7 /var/www/html/src/public/index.php(50): Core\App->run()
+#8 {main}
+[2026-05-03 15:36:35] [ERROR] Страница не найдена: /images/bounty.jpg | url: /images/bounty.jpg, method: GET, code: 404
+[2026-05-03 15:36:36] [ERROR] SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "reviews" does not exist
+LINE 1: SELECT * FROM reviews WHERE product_id = $1 ORDER BY created...
+                      ^ | url: /catalog, method: GET, controller: Controllers\CatalogController, action: index, file: /var/www/html/src/Models/Review.php, line: 83, trace: #0 /var/www/html/src/Models/Review.php(83): PDOStatement->execute(Array)
+#1 /var/www/html/src/Models/Product.php(92): Models\Review::findByProductId(1)
+#2 /var/www/html/src/Models/Product.php(97): Models\Product->getReviews()
+#3 /var/www/html/src/Views/catalog.php(100): Models\Product->getAverageRating()
+#4 /var/www/html/src/Controllers/Controller.php(27): require_once('/var/www/html/s...')
+#5 /var/www/html/src/Controllers/CatalogController.php(41): Controllers\Controller->render('catalog', Array)
+#6 /var/www/html/src/Core/App.php(84): Controllers\CatalogController->index()
+#7 /var/www/html/src/public/index.php(50): Core\App->run()
+#8 {main}
+[2026-05-03 15:36:36] [ERROR] Страница не найдена: /images/bounty.jpg | url: /images/bounty.jpg, method: GET, code: 404
+[2026-05-03 15:37:54] [ERROR] Страница не найдена: /images/mars.jpg | url: /images/mars.jpg, method: GET, code: 404
+[2026-05-03 15:37:54] [ERROR] Страница не найдена: /images/bounty.jpg | url: /images/bounty.jpg, method: GET, code: 404
+[2026-05-03 15:37:54] [ERROR] Страница не найдена: /images/twix.jpg | url: /images/twix.jpg, method: GET, code: 404
+[2026-05-03 15:38:53] [ERROR] Страница не найдена: /images/bounty.jpg | url: /images/bounty.jpg, method: GET, code: 404
+[2026-05-03 15:38:53] [ERROR] Страница не найдена: /images/mars.jpg | url: /images/mars.jpg, method: GET, code: 404
+[2026-05-03 15:38:53] [ERROR] Страница не найдена: /images/twix.jpg | url: /images/twix.jpg, method: GET, code: 404
+[2026-05-03 15:39:06] [ERROR] Страница не найдена: /images/mars.jpg | url: /images/mars.jpg, method: GET, code: 404
+[2026-05-03 15:56:20] [ERROR] Страница не найдена: /images/bounty.jpg | url: /images/bounty.jpg, method: GET, code: 404
+[2026-05-03 15:56:20] [ERROR] Страница не найдена: /images/mars.jpg | url: /images/mars.jpg, method: GET, code: 404
+[2026-05-03 15:56:20] [ERROR] Страница не найдена: /images/twix.jpg | url: /images/twix.jpg, method: GET, code: 404
+[2026-05-03 18:14:35] [ERROR] Отсутствуют параметры подключения к базе данных | url: /catalog, method: GET, code: 0
+[2026-05-03 18:16:46] [ERROR] Отсутствуют параметры подключения к базе данных в .env | url: /catalog, method: GET, code: 0
+[2026-05-03 18:17:20] [ERROR] Отсутствуют параметры подключения к базе данных в .env | url: /catalog, method: GET, code: 0
+[2026-05-03 18:18:19] [ERROR] Отсутствуют параметры подключения к базе данных | url: /catalog, method: GET, code: 0
+[2026-05-03 18:18:20] [ERROR] Отсутствуют параметры подключения к базе данных | url: /catalog, method: GET, code: 0
+[2026-05-03 18:20:09] [ERROR] Страница не найдена: /images/bounty.jpg | url: /images/bounty.jpg, method: GET, code: 404
+[2026-05-03 18:20:09] [ERROR] Страница не найдена: /images/mars.jpg | url: /images/mars.jpg, method: GET, code: 404
+[2026-05-03 18:20:09] [ERROR] Страница не найдена: /images/twix.jpg | url: /images/twix.jpg, method: GET, code: 404

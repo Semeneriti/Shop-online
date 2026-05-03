@@ -27,7 +27,6 @@ class User extends Model
         $this->name = $name;
         $this->email = $email;
         $this->passwordHash = $passwordHash;
-
         $this->createdAt = $createdAt ? new \DateTime($createdAt) : null;
         $this->updatedAt = $updatedAt ? new \DateTime($updatedAt) : null;
     }
