@@ -7,6 +7,7 @@ class App
 {
     private array $routes = [];
     private LoggerService $logger;
+    private array $requestClasses = [];
 
     public function __construct()
     {
@@ -18,9 +19,12 @@ class App
         $this->routes[$route]['GET'] = $handler;
     }
 
-    public function post(string $route, $handler): void
+    public function post(string $route, $handler, ?string $requestClass = null): void
     {
         $this->routes[$route]['POST'] = $handler;
+        if ($requestClass) {
+            $this->requestClasses[$route]['POST'] = $requestClass;
+        }
     }
 
     public function put(string $route, $handler): void
@@ -81,7 +85,20 @@ class App
 
                 // Оборачиваем вызов контроллера в try-catch
                 try {
-                    $controller->$methodName();
+                    $requestClass = $this->requestClasses[$url][$method] ?? null;
+
+                    if ($requestClass !== null) {
+                        if ($method === 'GET') {
+                            $requestData = $_GET;
+                        } else {
+                            $requestData = $_POST;
+                        }
+
+                        $request = new $requestClass($requestData);
+                        $controller->$methodName($request);
+                    } else {
+                        $controller->$methodName();
+                    }
                 } catch (\Throwable $e) {
                     // Логируем ошибку (теперь безопасно)
                     $this->logger->error($e->getMessage(), [
@@ -111,7 +128,7 @@ class App
                         <body>
                             <h1>Произошла ошибка</h1>
                             <p>' . htmlspecialchars($e->getMessage()) . '</p>
-                            <p><a href="/">Вернуться на главную</a></p>
+                            <p><a href="/catalog">Вернуться на главную</a></p>
                         </body>
                         </html>';
                     }

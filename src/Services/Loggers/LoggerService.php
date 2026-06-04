@@ -1,7 +1,7 @@
 <?php
 namespace Services\Loggers;
 
-class LoggerService implements LoggerInterface
+class LoggerService implements AppLoggerInterface
 {
     private string $logFile;
 

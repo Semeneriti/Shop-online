@@ -41,11 +41,11 @@ $app->post('/cart/clear', [\Controllers\CartController::class, 'clearCart']);
 // Профиль пользователя
 $app->get('/profile', [\Controllers\UserController::class, 'getProfile']);
 $app->get('/edit-profile', [\Controllers\UserController::class, 'showEditForm']);
-$app->post('/edit-profile', [\Controllers\UserController::class, 'updateProfile']);
+$app->post('/edit-profile', [\Controllers\UserController::class, 'updateProfile'], \Request\UpdateProfileRequest::class);
 
 // Оформление заказа
 $app->get('/checkout', [\Controllers\CartController::class, 'showCheckout']);
-$app->post('/checkout', [\Controllers\CartController::class, 'processCheckout']);
+$app->post('/checkout', [\Controllers\CartController::class, 'processCheckout'], \Request\CheckoutRequest::class);
 
 // Страница товара и отзывы
 $app->get('/product', [\Controllers\ProductController::class, 'showProduct']);
@@ -55,6 +55,11 @@ $app->post('/product/review', [\Controllers\ProductController::class, 'addReview
 $app->get('/500', function() {
     http_response_code(500);
     require_once __DIR__ . '/../public/500.php';
+});
+
+$app->get('/', function() {
+    header('Location: /catalog');
+    exit;
 });
 
 $app->run();

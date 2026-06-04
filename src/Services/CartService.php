@@ -12,6 +12,33 @@ class CartService
         return new Cart($userId);
     }
 
+    public function getProductsWithCartInfo(int $userId, array $products): array
+    {
+        $cartItems = $this->getCartItems($userId);
+        $result = [];
+
+        foreach ($products as $product) {
+            $inCart = false;
+            $cartAmount = 0;
+            foreach ($cartItems as $cartItem) {
+                $cartItemProduct = $cartItem['product'];
+                $cartItemId = is_array($cartItemProduct) ? ($cartItemProduct['id'] ?? 0) : $cartItemProduct->getId();
+                if ($cartItemId == $product->getId()) {
+                    $inCart = true;
+                    $cartAmount = $cartItem['amount'];
+                    break;
+                }
+            }
+            $result[] = [
+                'product' => $product,
+                'in_cart' => $inCart,
+                'cart_amount' => $cartAmount
+            ];
+        }
+
+        return $result;
+    }
+
     public function addItem(AddToCartDto $dto): bool
     {
         $cart = new Cart($dto->getUserId());
